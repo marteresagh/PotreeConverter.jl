@@ -31,7 +31,7 @@ struct PotreeArguments
 	colorRange::Vector{Float64}
 	intensityRange::Vector{Float64}
 	outputAttributes::Vector{String}
-	aabbValues::AABB
+	aabbValues::pAABB
 	pageName::String
 	sourceListingOnly::Bool
 	conversionQuality::ConversionQuality

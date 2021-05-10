@@ -1,21 +1,21 @@
-mutable struct AABB
+mutable struct pAABB
     min::Vector{Float64}
 	max::Vector{Float64}
 	size::Vector{Float64}
 
-	AABB(min::Vector{Float64},max::Vector{Float64}) = new(min,max,max-min)
+	pAABB(min::Vector{Float64},max::Vector{Float64}) = new(min,max,max-min)
 
-	function AABB(points::Common.Points)
+	function pAABB(points::Common.Points)
 		dim = size(points,1)
 		a = [extrema(points[i,:]) for i in 1:dim]
 		min = [a[1][1],a[2][1],a[3][1]]
 		max = [a[1][2],a[2][2],a[3][2]]
-		return AABB(min,max)
+		return pAABB(min,max)
 	end
 end
 
 
-function update!(aabb::AABB,point::Common.Point)
+function update!(aabb::pAABB,point::Common.Point)
 	x, y, z = point
 	aabb.min[1] = min(aabb.min[1],x)
 	aabb.min[2] = min(aabb.min[2],y)
@@ -28,29 +28,29 @@ function update!(aabb::AABB,point::Common.Point)
 	aabb.size = aabb.max - aabb.min;
 end
 
-function update!(aabb::AABB, bbcc::AABB)
+function update!(aabb::pAABB, bbcc::pAABB)
 	update!(aabb,bbcc.min)
 	update!(aabb,bbcc.max)
 end
 
 
 """
-	isinside(aabb::AABB,p::Points)
+	isinside(aabb::pAABB,p::Points)
 
 Check if point `p` is in a `aabb`.
 """
-function isInside(aabb::AABB,p::Common.Point)::Bool
+function isInside(aabb::pAABB,p::Common.Point)::Bool
 	return (  p[1]>=aabb.min[1] && p[1]<=aabb.max[1] &&
 			  p[2]>=aabb.min[2] && p[2]<=aabb.max[2] &&
 			   p[3]>=aabb.min[3] && p[3]<=aabb.max[3] )
 end
 
-function makeCubic(aabb::AABB)
+function makeCubic(aabb::pAABB)
 	aabb.max = aabb.min + max(aabb.size...)
 	aabb.size = aabb.max - aabb.min
 end
 
-function Base.show(io::IO, aabb::AABB)
+function Base.show(io::IO, aabb::pAABB)
     println(io, "min: $(aabb.min)")
 	println(io, "max: $(aabb.max)")
 	println(io, "size: $(aabb.size)")
