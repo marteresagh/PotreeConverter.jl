@@ -18,6 +18,7 @@ const OutputFormat = "LAS"
 # };
 @enum ConversionQuality FAST=1 DEFAULT=2 NICE=3
 
+
 struct PotreeArguments
 	storeOption::StoreOption
 	source::String # per ora un singolo file
