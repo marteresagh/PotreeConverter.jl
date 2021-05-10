@@ -42,43 +42,38 @@ function convert(args::PotreeArguments)
 		n = header.records_count
 		pointtype = FileManager.LasIO.pointformat(header)
 		pointdata = Vector{pointtype}(undef, n)
-		for i=1:n
-			pointdata[i] = FileManager.LasIO.read(s, pointtype)
-		end
-		@show pointdata
-	end
-	# header,lasPoints = FileManager.LasIO.load(source)
+		push!(boundingBoxes,pAABB([header.x_min,header.y_min,header.z_min],[header.x_max,header.y_max,header.z_max]));
+		push!(numPoints,convert(Int,n));
+		push!(sourceFilenames,args.source)
 
-	# push!(boundingBoxes,pAABB([header.x_min,header.y_min,header.z_min],[header.x_max,header.y_max,header.z_max]));
-	# push!(numPoints,convert(Int,header.records_count));
-	# push!(sourceFilenames,source)
-	#
-	# for lasPoint in lasPoints
-	# 	pointsProcessed += 1
-	# 	p = FileManager.xyz(lasPoint,header)
-	# 	# writer.add(p) #TODO
-	# 	if pointsProcessed % 1_000_000  == 0
-	# 		writer->processStore();
-	# 		writer->waitUntilProcessed();
-	#
-	# 		print("INDEXING: ")
-	# 		print("$pointsProcessed points processed;")
-	# 		print("$(writer.numAccepted) points written; ")
-	# 	end
-	# 	if pointsProcessed % flushLimit == 0
-	# 		println("FLUSHING: ")
-	# 		# writer->flush() #TODO
-	# 	end
-	# end
-	# #close file las
-	# # // end
-	#
-	# println("closing writer")
+		for i=1:n
+			pointsProcessed += 1
+			pointdata[i] = FileManager.LasIO.read(s, pointtype)
+			p = FileManager.xyz(pointdata[i],header)
+			writer.add(p) #TODO
+			# if pointsProcessed % 1_000_000  == 0
+			# 	writer->processStore();
+			# 	writer->waitUntilProcessed();
+			#
+			# 	print("INDEXING: ")
+			# 	print("$pointsProcessed points processed;")
+			# 	print("$(writer.numAccepted) points written; ")
+			# end
+			# if pointsProcessed % flushLimit == 0
+			# 	println("FLUSHING: ")
+			# 	# writer->flush() #TODO
+			# end
+		end
+	end
+	#close file las
+	# // end
+
+	println("closing writer")
 	# writer->flush();
 	# writer->close();
-	#
-	# # writeSources() #TODO
-	#
+
+	# writeSources() #TODO
+
 	# percent = writer.numAccepted / pointsProcessed
 	# percent = percent * 100
 	# println("conversion finished")

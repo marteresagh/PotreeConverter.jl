@@ -4,6 +4,7 @@ module PotreeConverter
     using FileManager
 
     include("AABB.jl")
+    include("stuff.jl")
     include("PotreeArguments.jl")
     include("convert.jl")
     include("main.jl")
