@@ -67,7 +67,6 @@ struct PotreeArguments
 				outputAttributes,
 				aabbValues,
 				pageName,
-				projection,
 				sourceListingOnly,
 				conversionQuality,
 				conversionQualityString,
