@@ -39,7 +39,7 @@ end
 
 Check if point `p` is in a `aabb`.
 """
-function isinside(aabb::AABB,p::Common.Point)::Bool
+function isInside(aabb::AABB,p::Common.Point)::Bool
 	return (  p[1]>=aabb.min[1] && p[1]<=aabb.max[1] &&
 			  p[2]>=aabb.min[2] && p[2]<=aabb.max[2] &&
 			   p[3]>=aabb.min[3] && p[3]<=aabb.max[3] )

@@ -31,14 +31,14 @@ struct PotreeArguments
 	colorRange::Vector{Float64}
 	intensityRange::Vector{Float64}
 	outputAttributes::Vector{String}
-	aabbValues::Common.AABB
+	aabbValues::AABB
 	pageName::String
 	sourceListingOnly::Bool
 	conversionQuality::ConversionQuality
 	conversionQualityString::String
 	material::String
 
-	function PotreeArguments(source,outdir,pageName; spacing = 0, d = 0, levels = -1, colorRange=Float64[], intensityRange=Float64[], scale = 0)
+	function PotreeArguments(source,outdir,pageName;aabb=nothing::Union{Nothing,Vector{FLoat64}}, spacing = 0, d = 0, levels = -1, colorRange=Float64[], intensityRange=Float64[], scale = 0)
 		storeOption = ABORT_IF_EXISTS
 		outFormat = OutputFormat
 		outputAttributes = ["RGB"]
@@ -53,7 +53,12 @@ struct PotreeArguments
 			d = 200
 		end
 
-		aabbValues = calculateAABB(source)
+		if isnothing(aabb)
+			aabbValues = calculateAABB(source)
+		else
+			aabbValues = calculateAABB(aabb)
+		end
+
 		return new(
 				storeOption,
 				source,
@@ -77,9 +82,12 @@ struct PotreeArguments
 
 end
 
+function calculateAABB(aabb::Vector{Float64})::AABB
+	return AABB([aabb[1],aabb[2],aabb[3]],[aabb[4],aabb[5],aabb[6]])
+end
 function calculateAABB(source)::AABB
 	aabb = FileManager.las2aabb(source)
-	return aabb
+	return AABB([aabb.x_min,aabb.y_min,aabb.z_min],[aabb.x_max,aabb.y_max,aabb.z_max])
 end
 
 
@@ -94,6 +102,7 @@ function main(source,outdir,pageName)
 	println("levels: $(args.levels)")
 	println("scale: $(args.scale)")
 
-	#convert(args)
+
+	convert(args)
 	return 0;
 end
