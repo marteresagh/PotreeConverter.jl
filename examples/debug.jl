@@ -1,5 +1,5 @@
 using PotreeConverter
-source = "D:/pointclouds/geo-fly_cava.laz"
+source = "D:/pointclouds/cava.las"
 outdir = "C:/Users/marte/Documents/GEOWEB/TEST/Potree"
 pageName = "CAVA"
 

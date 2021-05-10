@@ -46,7 +46,7 @@ function isInside(aabb::pAABB,p::Common.Point)::Bool
 end
 
 function makeCubic(aabb::pAABB)
-	aabb.max = aabb.min + max(aabb.size...)
+	aabb.max = aabb.min .+ max(aabb.size...)
 	aabb.size = aabb.max - aabb.min
 end
 
@@ -54,4 +54,13 @@ function Base.show(io::IO, aabb::pAABB)
     println(io, "min: $(aabb.min)")
 	println(io, "max: $(aabb.max)")
 	println(io, "size: $(aabb.size)")
+end
+
+function calculateAABB(aabb::Vector{Float64})::pAABB
+	return pAABB([aabb[1],aabb[2],aabb[3]],[aabb[4],aabb[5],aabb[6]])
+end
+
+function calculateAABB(source)::pAABB
+	aabb = FileManager.las2aabb(source)
+	return pAABB([aabb.x_min,aabb.y_min,aabb.z_min],[aabb.x_max,aabb.y_max,aabb.z_max])
 end
