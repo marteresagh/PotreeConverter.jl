@@ -38,7 +38,7 @@ struct PotreeArguments
 	conversionQualityString::String
 	material::String
 
-	function PotreeArguments(source,outdir,pageName;aabb=nothing::Union{Nothing,Vector{FLoat64}}, spacing = 0, d = 0, levels = -1, colorRange=Float64[], intensityRange=Float64[], scale = 0)
+	function PotreeArguments(source,outdir,pageName;aabb=nothing::Union{Nothing,Vector{Float64}}, spacing = 0, d = 0, levels = -1, colorRange=Float64[], intensityRange=Float64[], scale = 0)
 		storeOption = ABORT_IF_EXISTS
 		outFormat = OutputFormat
 		outputAttributes = ["RGB"]
