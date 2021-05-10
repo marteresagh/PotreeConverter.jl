@@ -5,4 +5,5 @@ module PotreeConverter
 
     include("main.jl")
     include("AABB.jl")
+    include("convert.jl")
 end # module
