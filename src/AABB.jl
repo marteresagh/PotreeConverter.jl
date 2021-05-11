@@ -1,20 +1,3 @@
-mutable struct pAABB
-    min::Vector{Float64}
-	max::Vector{Float64}
-	size::Vector{Float64}
-
-	pAABB(min::Vector{Float64},max::Vector{Float64}) = new(min,max,max-min)
-
-	function pAABB(points::Common.Points)
-		dim = size(points,1)
-		a = [extrema(points[i,:]) for i in 1:dim]
-		min = [a[1][1],a[2][1],a[3][1]]
-		max = [a[1][2],a[2][2],a[3][2]]
-		return pAABB(min,max)
-	end
-end
-
-
 function update!(aabb::pAABB,point::Common.Point)
 	x, y, z = point
 	aabb.min[1] = min(aabb.min[1],x)
@@ -63,31 +46,4 @@ end
 function calculateAABB(source)::pAABB
 	aabb = FileManager.las2aabb(source)
 	return pAABB([aabb.x_min,aabb.y_min,aabb.z_min],[aabb.x_max,aabb.y_max,aabb.z_max])
-end
-
-
-function childAABB(aabb::pAABB,index::Int)
-
-	min = copy(aabb.min)
-	max = copy(aabb.max)
-
-	if (index & 0b0001) > 0
-		min[3] += aabb.size[3] / 2
-	else
-		max[3] -= aabb.size[3] / 2
-	end
-
-	if (index & 0b0010) > 0
-		min[2] += aabb.size[2] / 2
-	else
-		max[2] -= aabb.size[2] / 2
-	end
-
-	if (index & 0b0100) > 0
-		min[1] += aabb.size[1] / 2
-	else
-		max[1] -= aabb.size[1] / 2
-	end
-
-	return pAABB(min, max)
 end

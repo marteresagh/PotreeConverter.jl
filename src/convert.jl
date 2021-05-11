@@ -2,34 +2,42 @@ function writeSources(path::String, sourceFilenames::Vector{String}, numPoints::
 	#scrive il json source.js
 end
 
-function convert(args::PotreeArguments)
+function potreeconvert(args::PotreeArguments)
 
     pointsProcessed = 0
 
-    println("AABB: ")
-    println(args.aabbValues)
+	if isempty(args.aabbValues)
+		args.aabb = calculateAABB(args.source)
+	else
+		args.aabb = calculateAABB(aabb)
+	end
 
-    PotreeConverter.makeCubic(args.aabbValues)
+    println("AABB: ")
+    println(args.aabb)
+
+    PotreeConverter.makeCubic(args.aabb)
     println("cubic AABB: ")
-    println(args.aabbValues)
+    println(args.aabb)
 
     if args.diagonalFraction != 0
-		args.spacing = Common.norm(args.aabbValues.size) / args.diagonalFraction
+		args.spacing = Common.norm(args.aabb.size) / args.diagonalFraction
 		println("spacing calculated from diagonal: $(args.spacing)")
 	end
 
-	workdir = FileManager.mkdir_project(args.outdir, args.pageName)
+	workdir = FileManager.mkdir_project(args.workDir, args.pageName)
 	if isfile(joinpath(workdir,"cloud.js"))
 		if args.storeOption == ABORT_IF_EXISTS
 			return 0
 		end
 	else
-		# writer();#TODO
+		root = PWNode(args.aabb)
+		writer = PotreeWriter(workdir, args.aabb, root, args.spacing, args.maxDepth, args.scale, args.quality )
 	end
+	writer.storeSize = args.storeSize
 
 	boundingBoxes = pAABB[]
-	numPoints=Int64[]
-	sourceFilenames=String[]
+	numPoints = Int64[]
+	sourceFilenames = String[]
 
 	# // for source in sources PER ORA UNA SINGOLA SOURCE
 	println("READING: $(args.source)")
@@ -50,7 +58,8 @@ function convert(args::PotreeArguments)
 			pointsProcessed += 1
 			pointdata[i] = FileManager.LasIO.read(s, pointtype)
 			p = FileManager.xyz(pointdata[i],header)
-			writer.add(p) #TODO
+			pt = Point(p...)
+			add(writer, pt) #TODO
 			# if pointsProcessed % 1_000_000  == 0
 			# 	writer->processStore();
 			# 	writer->waitUntilProcessed();
