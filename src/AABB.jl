@@ -66,28 +66,28 @@ function calculateAABB(source)::pAABB
 end
 
 
-function childAABB(aabb::pAABB,index::Int){
+function childAABB(aabb::pAABB,index::Int)
 
-	Vector3<double> min = aabb.min;
-	Vector3<double> max = aabb.max;
+	min = copy(aabb.min)
+	max = copy(aabb.max)
 
-	if((index & 0b0001) > 0){
-		min.z += aabb.size.z / 2;
-	}else{
-		max.z -= aabb.size.z / 2;
-	}
+	if (index & 0b0001) > 0
+		min[3] += aabb.size[3] / 2
+	else
+		max[3] -= aabb.size[3] / 2
+	end
 
-	if((index & 0b0010) > 0){
-		min.y += aabb.size.y / 2;
-	}else{
-		max.y -= aabb.size.y / 2;
-	}
+	if (index & 0b0010) > 0
+		min[2] += aabb.size[2] / 2
+	else
+		max[2] -= aabb.size[2] / 2
+	end
 
-	if((index & 0b0100) > 0){
-		min.x += aabb.size.x / 2;
-	}else{
-		max.x -= aabb.size.x / 2;
-	}
+	if (index & 0b0100) > 0
+		min[1] += aabb.size[1] / 2
+	else
+		max[1] -= aabb.size[1] / 2
+	end
 
-	return AABB(min, max);
-}
+	return pAABB(min, max)
+end

@@ -148,14 +148,14 @@ mutable struct PWNode
 
 		numParts = Int(floor(length(a) / hierarchyStepSize))
 		for i = 0:numParts-1
-			path *= indices[i * hierarchyStepSize+1: hierarchyStepSize] * "/";
+			path *= indices[i * hierarchyStepSize+1: hierarchyStepSize] * "/"
 		end
 
-		return path;
+		return path
 	end
 
 	function path(potreeWriter::potreeWriter,node::PWNode)
-		path = hierarchyPath(potreeWriter,node)*name(node)*".las";
+		path = hierarchyPath(potreeWriter,node)*name(node)*".las"
 		return path
 	end
 
@@ -167,23 +167,23 @@ mutable struct PWNode
 		return length(node.children) > 0
 	end
 
-	void loadFromDisk();
-
-	PWNode *add(Point &point);
-
-	PWNode *createChild(int childIndex);
-
-	void split();
-
-
-	void flush();
-
-	void traverse(std::function<void(PWNode*)> callback);
-
-	void traverseBreadthFirst(std::function<void(PWNode*)> callback);
-
-	vector<PWNode*> getHierarchy(int levels);
-
-	PWNode* findNode(string name);
+	# void loadFromDisk();
+	#
+	# PWNode *add(Point &point);
+	#
+	# PWNode *createChild(int childIndex);
+	#
+	# void split();
+	#
+	#
+	# void flush();
+	#
+	# void traverse(std::function<void(PWNode*)> callback);
+	#
+	# void traverseBreadthFirst(std::function<void(PWNode*)> callback);
+	#
+	# vector<PWNode*> getHierarchy(int levels);
+	#
+	# PWNode* findNode(string name);
 
 end
