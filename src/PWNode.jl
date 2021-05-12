@@ -99,12 +99,35 @@ function isInnerNode(node::PWNode)
 end
 
 # void loadFromDisk();
-#
+function loadFromDisk(node::PWNode, potreeWriter::PotreeWriter)
+	file_node = joinpath(potreeWriter.workDir, "data", path(potreeWriter, node))
+	open(file_node) do s
+		FileManager.LasIO.skiplasf(s)
+		header = FileManager.LasIO.read(s, FileManager.LasIO.LasHeader)
+		n = header.records_count
+		pointtype = FileManager.LasIO.pointformat(header)
+		pointdata = Vector{pointtype}(undef, n)
+
+		for i=1:n
+			pointdata[i] = FileManager.LasIO.read(s, pointtype)
+			p = FileManager.xyz(pointdata[i],header)
+			pt = Point(p...)
+			if isLeafNode(node)
+				push!(node.store,p)
+			else
+				addWithoutCheck(node.grid,p)
+			end
+		end
+	end
+	node.grid.numAccepted = node.numAccepted
+	node.isInMemory = true;
+end
+
 # PWNode *add(Point &point);
 function add(node::PWNode, point::Point, potreeWriter::PotreeWriter)
 	node.addCalledSinceLastFlush = true;
 	if !node.isInMemory
-		# loadFromDisk();#TODO
+		loadFromDisk(node,potreeWriter)
 	end
 
 	if isLeafNode(node)
