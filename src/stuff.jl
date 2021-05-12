@@ -39,7 +39,7 @@ function childAABB(aabb::pAABB,index::Int)::pAABB
 end
 
 
-function nodeIndex(aabb::pAABB, point::Common.Point)::Int
+function nodeIndex(aabb::pAABB, point::Vector{Float64})::Int
 	mx = Int(floor(2.0 * (point[1] - aabb.min[1]) / aabb.size[1]))
 	my = Int(floor(2.0 * (point[2] - aabb.min[2]) / aabb.size[2]))
 	mz = Int(floor(2.0 * (point[3] - aabb.min[3]) / aabb.size[3]))
@@ -49,4 +49,9 @@ function nodeIndex(aabb::pAABB, point::Common.Point)::Int
 	mz = min(mz, 1)
 
 	return (mx << 2) | (my << 1) | mz
+end
+
+function squaredDistanceTo(a::Vector,b::Vector)
+	x,y,z = [a-b]
+	return x*x + y*y + z*z
 end

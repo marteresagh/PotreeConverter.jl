@@ -30,8 +30,9 @@ function potreeconvert(args::PotreeArguments)
 			return 0
 		end
 	else
-		root = PWNode(args.aabb)
-		writer = PotreeWriter(workdir, args.aabb, root, args.spacing, args.maxDepth, args.scale, args.quality )
+		writer = PotreeWriter(workdir, args.aabb, PWNode(), args.spacing, args.maxDepth, args.scale, args.quality)
+		root = PWNode(writer,args.aabb)
+		writer.root = root
 	end
 	writer.storeSize = args.storeSize
 
@@ -60,6 +61,9 @@ function potreeconvert(args::PotreeArguments)
 			p = FileManager.xyz(pointdata[i],header)
 			pt = Point(p...)
 			add(writer, pt) #TODO
+			if i == 10
+				break
+			end
 			# if pointsProcessed % 1_000_000  == 0
 			# 	writer->processStore();
 			# 	writer->waitUntilProcessed();
@@ -87,5 +91,5 @@ function potreeconvert(args::PotreeArguments)
 	# percent = percent * 100
 	# println("conversion finished")
 	# println("$pointsProcessed points were processed and $(writer.numAccepted) points ( $percent% ) were written to the output.")
-
+	return writer
 end

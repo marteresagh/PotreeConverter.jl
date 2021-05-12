@@ -26,15 +26,16 @@ module PotreeConverter
     @enum ConversionQuality FAST=1 DEFAULT=2 NICE=3
 
     const cellSizeFactor = 5.0
-##### APPUNTI
-# PotreeWriter globale???
-####
+
     include("struct.jl")
     include("stuff.jl")
+    include("PotreeWriter.jl")
+    include("PotreeArguments.jl")
     include("AABB.jl")
+    include("SparseGrid.jl")
+    include("GridCell.jl")
     include("PWNode.jl")
     include("convert.jl")
     include("main.jl")
-    # include("PotreeArguments.jl")
-    # include("PotreeWriter.jl")
+
 end # module

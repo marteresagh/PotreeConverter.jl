@@ -1,3 +1,65 @@
+function PWNode()
+	return nothing
+end
+
+function PWNode(potreeWriter::PotreeWriter,aabb::pAABB)
+	index = -1
+	acceptedAABB = pAABB([Inf,Inf,Inf],[-Inf,-Inf,-Inf])
+	level = 0
+	numAccepted = 0
+	spacing = get_spacing(potreeWriter.spacing,level)
+	parent = nothing
+	children = PWNode[]
+	addedSinceLastFlush = true
+	addCalledSinceLastFlush = false
+	cache = Float64[]
+	store = Float64[]
+	isInMemory = true
+	grid = SparseGrid(aabb,spacing)
+	return PWNode( index,
+				aabb,
+				acceptedAABB,
+				level,
+				spacing,
+				grid,
+				numAccepted,
+				parent,
+				children,
+				addedSinceLastFlush,
+				addCalledSinceLastFlush,
+				cache,
+				store,
+				isInMemory)
+end
+
+function PWNode(potreeWriter::PotreeWriter,index::Int, aabb::pAABB, level::Int)
+	acceptedAABB = pAABB([Inf,Inf,Inf],[-Inf,-Inf,-Inf])
+	numAccepted = 0
+	spacing = get_spacing(potreeWriter.spacing,level)
+	parent = nothing
+	children = PWNode[]
+	addedSinceLastFlush = true
+	addCalledSinceLastFlush = false
+	cache = Float64[]
+	store = Float64[]
+	isInMemory = true
+	grid = SparseGrid(aabb,spacing)
+	return PWNode( index,
+				aabb,
+				acceptedAABB,
+				level,
+				spacing,
+				grid,
+				numAccepted,
+				parent,
+				children,
+				addedSinceLastFlush,
+				addCalledSinceLastFlush,
+				cache,
+				store,
+				isInMemory)
+end
+
 function name(node::PWNode)::String
 	if isnothing(node.parent)
 		return "r"
@@ -6,8 +68,8 @@ function name(node::PWNode)::String
 	end
 end
 
-function spacing(potreeWriter::PotreeWriter,node::PWNode)::Float64
-	return potreeWriter.spacing/2^level
+function get_spacing(spacing::Float64,level::Int)::Float64
+	return spacing/2^level
 end
 
 function hierarchyPath(potreeWriter::PotreeWriter,node::PWNode)::String
@@ -15,7 +77,7 @@ function hierarchyPath(potreeWriter::PotreeWriter,node::PWNode)::String
 	hierarchyStepSize = potreeWriter.hierarchyStepSize
 	indices = name(node)[2:end]
 
-	numParts = Int(floor(length(a) / hierarchyStepSize))
+	numParts = Int(floor(length(indices) / hierarchyStepSize))
 	for i = 0:numParts-1
 		path *= indices[i * hierarchyStepSize+1: hierarchyStepSize] * "/"
 	end
@@ -39,7 +101,7 @@ end
 # void loadFromDisk();
 #
 # PWNode *add(Point &point);
-function add(node::PWNode,point::Point)
+function add(node::PWNode, point::Point, potreeWriter::PotreeWriter)
 	node.addCalledSinceLastFlush = true;
 	if !node.isInMemory
 		# loadFromDisk();#TODO
@@ -48,13 +110,12 @@ function add(node::PWNode,point::Point)
 	if isLeafNode(node)
 		push!(node.store,point)
 		if length(node.store) >= potreeWriter.storeSize
-			split(node::PWNode)
+			split(potreeWriter,node)
 		end
-
 		return node
 	else
 		accepted = false
-		accepted = add(point.position, grid)
+		accepted = add(node.grid, point.position)
 		if accepted
 			push!(node.cache,point)
 			update!(node.acceptedAABB,point.position)
@@ -65,19 +126,19 @@ function add(node::PWNode,point::Point)
 			if potreeWriter.maxDepth != -1 && node.level >= potreeWriter.maxDepth
 				return
 			end
+
 			childIndex = nodeIndex(node.aabb, point.position);
 			if childIndex >= 0
 				if isLeafNode(node)
-					node.children = PWNode[NULL]
+					node.children = Vector{PWNode}(undef,8)
 				end
-				child = node.children[childIndex];
-
-				# create child node if not existent
-				if isnothing(child)
-					child = createChild(node,childIndex);
+				if !isdefined(children, childIndex)
+					child = createChild(potreeWriter,node,childIndex);
+				else
+					child = node.children[childIndex];
 				end
 
-				return add(child,point)
+				return add(child,point,potreeWriter)
 			 else
 				return
 			end
@@ -85,26 +146,28 @@ function add(node::PWNode,point::Point)
 	end
 end
 
-function createChild(node::PWNode, childIndex::Int)::PWNode
+function createChild(potreeWriter::PotreeWriter, node::PWNode, childIndex::Int)::PWNode
 	cAABB = childAABB(node.aabb, childIndex)
-	child = PWNode(childIndex, cAABB, node.level+1)
+	child = PWNode(potreeWriter, childIndex, cAABB, node.level+1)
 	child.parent = node.parent
 	node.children[childIndex] = child
 
 	return child
 end
 
-function split(node::PWNode)
-	# filepath = workDir() + "/data/" + path()
-	# if isfile(filepath)
-	# 	remove(filepath)
-	# end
-	#
-	# for point in store
-	# 	add(point)
-	# end
-	#
-	# store = [];
+function split(potreeWriter::PotreeWriter, node::PWNode)
+	node.children = Vector{PWNode}(undef,8)
+	filepath = joinpath(potreeWriter.workDir, "data", path(potreeWriter,node))
+
+	if isfile(filepath)
+		rm(filepath)
+	end
+
+	for point in node.store
+		add(node, point, potreeWriter)
+	end
+
+	node.store = Point[];
 end
 
 # void flush();
@@ -144,37 +207,3 @@ function getHierarchy(this_node::PWNode,levels::Int)::Vector{PWNode}
 	return hierarchy
 end
 # PWNode* findNode(string name);
-
-
-function add(potreeWriter::PotreeWriter,p::Point)
-	if potreeWriter.numAdded == 0
-		dataDir = joinpath(potreeWriter.workDir,"data")
-		tempDir = joinpath(potreeWriter.workDir,"temp")
-
-		FileManager.mkdir_if(dataDir);
-		FileManager.mkdir_if(tempDir);
-	end
-
-	push!(potreeWriter.store,p)
-	potreeWriter.numAdded+=1
-	if length(potreeWriter.store) > 10_000
-		processStore(potreeWriter)
-	end
-end
-
-
-function processStore(potreeWriter::PotreeWriter)
-	st = copy(potreeWriter.store)
-	potreeWriter.store = Point[]
-
-	for p in st
-		acceptedBy = add(potreeWriter.root,p)
-		if !isnothing(acceptedBy)
-			update!(potreeWriter.tightAABB,p.position)
-
-			potreeWriter.pointsInMemory+=1
-			potreeWriter.numAccepted+=1
-		end
-	end
-
-end

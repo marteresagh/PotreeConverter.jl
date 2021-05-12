@@ -1,0 +1,10 @@
+PSEUDOCODICE
+
+per ogni punto nel file 
+
+	metto i punti da parte nello store del writer
+		se questi punti aggiunti sono più di 10000
+			li processo, cioè:
+				aggiungo il punto nel nodo
+					se il nodo è foglia li aggiungo tutti, quando supera una certa soglia splitto il nodo
+						creo i figli e ggiungo i punti al nodo, ma ora non è foglia perchè ha dei figli

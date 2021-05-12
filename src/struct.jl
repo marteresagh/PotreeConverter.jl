@@ -1,6 +1,6 @@
 struct Point
 	position::Vector{Float64}
-	color::Vector{Char}
+	color::Vector{UInt8}
 	normal::Vector{Float64}
 	intensity::UInt8
 	classification::Char
@@ -36,34 +36,39 @@ mutable struct pAABB
 	end
 end
 
+struct GridIndex
+	i::Int
+	j::Int
+	k::Int
+
+	function GridIndex()
+		return new(0,0,0)
+	end
+
+	function GridIndex(i::Int,j::Int,k::Int)
+		return new(i,j,k)
+	end
+
+end
+
 struct GridCell
     points::Vector{Float64}
     neighbours::Vector{GridCell}
 
+	function GridCell()
+		new(Float64[],Vector{GridCell}(undef,26))
+	end
+
 end
 
 struct SparseGrid
+	map::Dict{Int64,GridCell}
     width::Int
     height::Int
     depth::Int
     aabb::pAABB
     squaredSpacing::Float64
-    numAccepted::Int
-
-    function SparseGrid(aabb::pAABB, spacing::Float64)
-    	width =	Int(floor(aabb.size[1] / (spacing * cellSizeFactor) ))
-    	height = Int(floor(aabb.size[2] / (spacing * cellSizeFactor) ))
-    	depth =	Int(floor(aabb.size[3] / (spacing * cellSizeFactor) ))
-    	squaredSpacing = spacing * spacing;
-    	numAccepted = 0
-    	return new(width,
-    				height,
-    				depth,
-    				aabb,
-    				squaredSpacing,
-    				numAccepted
-    				)
-    end
+    numAccepted::UInt64
 end
 
 mutable struct PWNode
@@ -71,7 +76,8 @@ mutable struct PWNode
 	aabb::pAABB
 	acceptedAABB::pAABB
 	level::Int
-	# SparseGrid *grid;
+	spacing::Float64
+	grid::SparseGrid
 	numAccepted::UInt
 	parent::Union{Nothing,PWNode}
 	children::Vector{PWNode}
@@ -80,73 +86,17 @@ mutable struct PWNode
 	cache::Vector{Point}
 	store::Vector{Point}
 	isInMemory::Bool
-
-	function PWNode(aabb::pAABB)
-		index = -1
-		acceptedAABB = pAABB([Inf,Inf,Inf],[-Inf,-Inf,-Inf])
-		level = 0
-		numAccepted = 0
-		parent = nothing
-		children = PWNode[]
-		addedSinceLastFlush = true
-		addCalledSinceLastFlush = false
-		cache = Float64[]
-		store = Float64[]
-		isInMemory = true
-		return new( index,
-					aabb,
-					acceptedAABB,
-					level,
-					# SparseGrid *grid;
-					numAccepted,
-					parent,
-					children,
-					addedSinceLastFlush,
-					addCalledSinceLastFlush,
-					cache,
-					store,
-					isInMemory)
-	end
-
-	function PWNode(index::Int, aabb::pAABB, level::Int)
-		acceptedAABB = pAABB([Inf,Inf,Inf],[-Inf,-Inf,-Inf])
-		numAccepted = 0
-		parent = nothing
-		children = PWNode[]
-		addedSinceLastFlush = true
-		addCalledSinceLastFlush = false
-		cache = Float64[]
-		store = Float64[]
-		isInMemory = true
-		return new( index,
-					aabb,
-					acceptedAABB,
-					level,
-					# SparseGrid *grid;
-					numAccepted,
-					parent,
-					children,
-					addedSinceLastFlush,
-					addCalledSinceLastFlush,
-					cache,
-					store,
-					isInMemory)
-	end
-
-	PWNode() = nothing;
-
 end
 
 
 mutable struct PotreeWriter
-
 	aabb::pAABB
 	tightAABB::Union{Nothing,pAABB}
 	workDir::String
 	spacing::Float64
 	scale::Float64
 	maxDepth::Int64
-	root::PWNode
+	root::Union{Nothing,PWNode}
 	numAdded::Int64
 	numAccepted::Int64
 	outputFormat::String
@@ -156,50 +106,6 @@ mutable struct PotreeWriter
 	pointsInMemory::Int
 	quality::ConversionQuality
 	storeSize::Int64
-
-	function PotreeWriter(workDir::String, aabb::pAABB, root::PWNode, spacing::Float64, maxDepth::Int64, scale::Float64, quality::ConversionQuality )
-
-		outputFormat = OutputFormat
-		pointAttributes = "LAS"
-		tightAABB = nothing
-		numAdded = 0
-		numAccepted = 0
-		hierarchyStepSize = 5
-		pointsInMemory = 0
-		storeSize = 20_000
-		store = Point[]
-
-		if scale == 0
-			if Common.norm(aabb.size) > 1_000_000
-				scale = 0.01
-			elseif Common.norm(aabb.size) > 100_000
-				scale = 0.001
-			elseif Common.norm(aabb.size) > 1
-				scale = 0.001
-			else
-				scale = 0.0001
-			end
-		end
-
-		return new(aabb,
-				tightAABB,
-				workDir,
-				spacing,
-				scale,
-				maxDepth,
-				root,
-				numAdded,
-				numAccepted,
-				outputFormat,
-				pointAttributes,
-				hierarchyStepSize,
-				store,
-				pointsInMemory,
-				quality,
-				storeSize)
-	end
-
-
 end
 
 
@@ -223,44 +129,4 @@ mutable struct PotreeArguments
 	material::String
 	storeSize::Int
 	flushLimit::Int
-
-    function PotreeArguments(workDir::String, source::String)
-		aabb = pAABB([Inf,Inf,Inf],[-Inf,-Inf,-Inf])
-		pointAttributes = ""
-		spacing = 0.
-		maxDepth = -1
-		outputFormat = OutputFormat
-		outputAttributes = ["RGB"]
-		colorRange = Float64[]
-		intensityRange = Float64[]
-		scale = 0.01
-		diagonalFraction = 250
-		aabbValues = Float64[]
-		pageName = ""
-		storeOption = ABORT_IF_EXISTS
-		quality = DEFAULT
-		material = "RGB"
-		storeSize = 20_000
-	    flushLimit = 10_000_000
-		return new(aabb,
-				source,
-				workDir,
-				pointAttributes,
-				spacing,
-				maxDepth,
-				outputFormat,
-				outputAttributes,
-				colorRange,
-				intensityRange,
-				scale,
-				diagonalFraction,
-				aabbValues,
-				pageName,
-				storeOption,
-				quality,
-				material,
-				storeSize,
-				flushLimit
-				)
-	end
 end
