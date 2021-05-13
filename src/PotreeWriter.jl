@@ -72,3 +72,10 @@ function processStore(potreeWriter::PotreeWriter)
 	end
 
 end
+
+
+function flush(potreeWriter::PotreeWriter)
+	processStore(potreeWriter)
+
+	flush(potreeWriter.root,potreeWriter) #TODO
+end

@@ -15,12 +15,12 @@ function SparseGrid(aabb::pAABB, spacing::Float64)
 				)
 end
 
-function add(grid::SparseGrid,p::Vector{Float64})::Bool
+function add(sparseGrid::SparseGrid,p::Vector{Float64})::Bool
 
-	aabb = grid.aabb
-	width = grid.width
-	height = grid.height
-	depth = grid.depth
+	aabb = sparseGrid.aabb
+	width = sparseGrid.width
+	height = sparseGrid.height
+	depth = sparseGrid.depth
 
 	nx = Int(floor(width*(p[1] - aabb.min[1]) / aabb.size[1]))
 	ny = Int(floor(width*(p[2] - aabb.min[2]) / aabb.size[2]))
@@ -33,17 +33,17 @@ function add(grid::SparseGrid,p::Vector{Float64})::Bool
 
 	index = GridIndex(i,j,k)
 	key = (k << 40) | (j << 20) | i
-	if !haskey(grid.map,key)
+	if !haskey(sparseGrid.map,key)
 		cell = GridCell()
-		it = GridCell(grid, index, cell)
-		gird.map[key] = it
+		it = GridCell(sparseGrid, index, cell)
+		sparseGrid.map[key] = it
 	else
-		it = grid.map[key]
+		it = sparseGrid.map[key]
 	end
 
-	if isDistant(grid, p, it)
+	if isDistant(sparseGrid, p, it)
 		add(it,p)
-		grid.numAccepted+=1
+		sparseGrid.numAccepted+=1
 		return true
 	else
 		return false
@@ -64,23 +64,32 @@ function isDistant(sparseGrid::SparseGrid, p::Vector{Float64}, cell::GridCell)::
 	return true
 end
 
-function addWithoutCheck(sparseGrid::SparseGrid, p::Vector{Float64}) #TODO
-	int nx = (int)(width*(p.x - aabb.min.x) / aabb.size.x);
-	int ny = (int)(height*(p.y - aabb.min.y) / aabb.size.y);
-	int nz = (int)(depth*(p.z - aabb.min.z) / aabb.size.z);
+function addWithoutCheck(sparseGrid::SparseGrid, p::Vector{Float64}, potreeWriter::PotreeWriter)
+	aabb = sparseGrid.aabb
+	width = sparseGrid.width
+	height = sparseGrid.height
+	depth = sparseGrid.depth
 
-	int i = min(nx, width-1);
-	int j = min(ny, height-1);
-	int k = min(nz, depth-1);
+	nx = Int(floor(width*(p[1] - aabb.min[1]) / aabb.size[1]))
+	ny = Int(floor(height*(p[2] - aabb.min[2]) / aabb.size[2]))
+	nz = Int(floor(depth*(p[3] - aabb.min[3]) / aabb.size[3]))
 
-	GridIndex index(i,j,k);
-	long long key = ((long long)k << 40) | ((long long)j << 20) | (long long)i;
-	SparseGrid::iterator it = find(key);
-	if(it == end()){
-		it = this->insert(value_type(key, new GridCell(this, index))).first;
-	}
+	i = min(nx, width-1)
+	j = min(ny, height-1)
+	k = min(nz, depth-1)
 
-	it->second->add(p);
+	index = GridIndex(i,j,k)
+	key = k << 40 | j << 20 | i
+
+	if !haskey(sparseGrid.map,key)
+		cell = GridCell()
+		it = GridCell(sparseGrid, index, cell)
+		sparseGrid.map[key] = it
+	else
+		it = grid.map[key]
+	end
+
+	add(it,p,potreeWriter)
 end
 
 #

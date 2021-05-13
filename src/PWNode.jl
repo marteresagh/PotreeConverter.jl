@@ -9,7 +9,7 @@ function PWNode(potreeWriter::PotreeWriter,aabb::pAABB)
 	numAccepted = 0
 	spacing = get_spacing(potreeWriter.spacing,level)
 	parent = nothing
-	children = PWNode[]
+	children = Union{Nothing,PWNode}[]
 	addedSinceLastFlush = true
 	addCalledSinceLastFlush = false
 	cache = Float64[]
@@ -37,7 +37,7 @@ function PWNode(potreeWriter::PotreeWriter,index::Int, aabb::pAABB, level::Int)
 	numAccepted = 0
 	spacing = get_spacing(potreeWriter.spacing,level)
 	parent = nothing
-	children = PWNode[]
+	children = Union{Nothing,PWNode}[]
 	addedSinceLastFlush = true
 	addCalledSinceLastFlush = false
 	cache = Float64[]
@@ -115,7 +115,7 @@ function loadFromDisk(node::PWNode, potreeWriter::PotreeWriter)
 			if isLeafNode(node)
 				push!(node.store,p)
 			else
-				addWithoutCheck(node.grid,p)
+				addWithoutCheck(node.grid, p, potreeWriter)
 			end
 		end
 	end
@@ -153,12 +153,12 @@ function add(node::PWNode, point::Point, potreeWriter::PotreeWriter)
 			childIndex = nodeIndex(node.aabb, point.position);
 			if childIndex >= 0
 				if isLeafNode(node)
-					node.children = Vector{PWNode}(undef,8)
+					node.children = Vector{Union{Nothing,PWNode}}(nothing,8)
 				end
-				if !isdefined(children, childIndex)
+				if !isnothing(children[childIndex])
 					child = createChild(potreeWriter,node,childIndex);
 				else
-					child = node.children[childIndex];
+					child = node.children[childIndex]
 				end
 
 				return add(child,point,potreeWriter)
@@ -179,7 +179,7 @@ function createChild(potreeWriter::PotreeWriter, node::PWNode, childIndex::Int):
 end
 
 function split(potreeWriter::PotreeWriter, node::PWNode)
-	node.children = Vector{PWNode}(undef,8)
+	node.children = Vector{Union{Nothing,PWNode}}(nothing,8)
 	filepath = joinpath(potreeWriter.workDir, "data", path(potreeWriter,node))
 
 	if isfile(filepath)
@@ -194,7 +194,77 @@ function split(potreeWriter::PotreeWriter, node::PWNode)
 end
 
 # void flush();
-#
+function flush(node::PWNode, potreeWriter::PotreeWriter)
+
+	function writeToDisk(points::Vector{Point}, append::Bool)
+		filepath = joinpath(potreeWriter.workDir,"data", path(potreeWriter,node)
+
+		dir = joinpath(potreeWriter.workDir, "data", hierarchyPath(potreeWriter,node)
+		FileManager.mkdir_if(dir)
+
+		if append
+			temppath = potreeWriter.workDir + "/temp/prepend.las"
+			if isfile(filepath)
+				mv(filepath, temppath)
+			end
+			# IDEA: leggo i punti da temp uno ad uno e li metto in file
+			# writer = createWriter(filepath);# TODO apro il file per salvare i punti
+			# devo costruire l'header e salvare come al solito i punti
+			if isfile(temppath)
+				# PointReader *reader = createReader(temppath);# TODO Apri il file e leggi i punti come prima
+				for p in #pointdata
+					# write(writer,p);# TODO salva i punti sul file e poi concludo dopo di salvare il resto
+				end
+				rm(temppath)
+			end
+		else
+			if isfile(filepath)
+				rm(filepath)
+			end
+			# IDEA allora li salvo su file i punti
+			# writer = createWriter(filepath);# TODO
+		end
+
+		# punti da appendere o da salvare
+		for e_c in points
+			write(writer,e_c);
+		end
+
+		@assert !append && writer.numPoints == node.numAccepted) "writeToDisk $(writer.numPoints) != $(node.numAccepted)"
+	end
+
+
+	if isLeafNode(node)
+		if node.addCalledSinceLastFlush
+			writeToDisk(node.store, false)
+
+		elseif !node.addCalledSinceLastFlush && node.isInMemory
+			node.store = Point[]
+			node.isInMemory = false;
+		end
+	else
+		if node.addCalledSinceLastFlush
+			writeToDisk(node.cache, true)
+
+			node.cache = Point[]
+		elseif !node.addCalledSinceLastFlush && node.isInMemory
+			node.grid = SparseGrid(node.aabb, node.spacing);
+			node.isInMemory = false
+		end
+	end
+
+	node.addCalledSinceLastFlush = false
+
+	for i in 1:8
+		if !isnothing(node.children[i])
+			child = node.children[i]
+			flush(child, potreeWriter)
+		end
+	end
+
+
+end
+
 # void traverse(std::function<void(PWNode*)> callback);
 function traverse(this_node::PWNode)
 	for child in this_node.children

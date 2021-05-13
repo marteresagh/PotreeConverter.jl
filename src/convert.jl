@@ -60,36 +60,32 @@ function potreeconvert(args::PotreeArguments)
 			pointdata[i] = FileManager.LasIO.read(s, pointtype)
 			p = FileManager.xyz(pointdata[i],header)
 			pt = Point(p...)
-			add(writer, pt) #TODO
+			add(writer, pt)
 			if i == 10
 				break
 			end
-			# if pointsProcessed % 1_000_000  == 0
-			# 	writer->processStore();
-			# 	writer->waitUntilProcessed();
-			#
-			# 	print("INDEXING: ")
-			# 	print("$pointsProcessed points processed;")
-			# 	print("$(writer.numAccepted) points written; ")
-			# end
-			# if pointsProcessed % flushLimit == 0
-			# 	println("FLUSHING: ")
-			# 	# writer->flush() #TODO
-			# end
+			if pointsProcessed % 1_000_000  == 0
+				processStore(writer)
+				print("INDEXING: ")
+				print("$pointsProcessed points processed;")
+				print("$(writer.numAccepted) points written; ")
+			end
+			if pointsProcessed % args.flushLimit == 0
+				println("FLUSHING: ")
+				flush(writer)
+			end
 		end
 	end
 	#close file las
-	# // end
 
 	println("closing writer")
-	# writer->flush();
-	# writer->close();
+	flush(writer)
 
 	# writeSources() #TODO
 
-	# percent = writer.numAccepted / pointsProcessed
-	# percent = percent * 100
-	# println("conversion finished")
-	# println("$pointsProcessed points were processed and $(writer.numAccepted) points ( $percent% ) were written to the output.")
+	percent = writer.numAccepted / pointsProcessed
+	percent = percent * 100
+	println("conversion finished")
+	println("$pointsProcessed points were processed and $(writer.numAccepted) points ( $percent% ) were written to the output.")
 	return writer
 end

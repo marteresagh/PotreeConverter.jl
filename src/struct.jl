@@ -80,7 +80,7 @@ mutable struct PWNode
 	grid::SparseGrid
 	numAccepted::UInt
 	parent::Union{Nothing,PWNode}
-	children::Vector{PWNode}
+	children::Vector{Union{Nothing,PWNode}}
 	addedSinceLastFlush::Bool
 	addCalledSinceLastFlush::Bool
 	cache::Vector{Point}
