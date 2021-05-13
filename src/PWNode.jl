@@ -205,11 +205,22 @@ function flush(node::PWNode, potreeWriter::PotreeWriter)
 			end
 			# IDEA: leggo i punti da temp uno ad uno e li metto in file
 			# writer = createWriter(filepath);# TODO apro il file per salvare i punti
-			# devo costruire l'header e salvare come al solito i punti
+			io = open(filepath,"w")
 			if isfile(temppath)
-				# PointReader *reader = createReader(temppath);# TODO Apri il file e leggi i punti come prima
-				for p in pointdata
-					# write(writer,p);# TODO salva i punti sul file e poi concludo dopo di salvare il resto
+				open(temppath) do s
+
+					# FileManager.LasIO.skiplasf(s)
+					# header = FileManager.LasIO.read(s, FileManager.LasIO.LasHeader)
+					# n = header.records_count
+					# pointtype = FileManager.LasIO.pointformat(header)
+					# pointdata = Vector{pointtype}(undef, n)
+					#
+					# for i in 1:n
+					# 	pointdata[i] = FileManager.LasIO.read(s, pointtype)
+					# 	point = Point(pointdata[i], header)
+					# write las in new file attenzione che devo costruire l'header #TODO
+					# end
+
 				end
 				rm(temppath)
 			end
@@ -225,7 +236,7 @@ function flush(node::PWNode, potreeWriter::PotreeWriter)
 		for e_c in points
 			# write(writer,e_c) #TODO
 		end
-
+		close(io)
 		@assert !append && writer.numPoints == node.numAccepted "writeToDisk $(writer.numPoints) != $(node.numAccepted)"
 	end
 

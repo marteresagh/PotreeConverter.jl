@@ -45,12 +45,14 @@ function potreeconvert(args::PotreeArguments)
 
 	# reader of LAS file
 	open(args.source) do s
+
 		FileManager.LasIO.skiplasf(s)
 		header = FileManager.LasIO.read(s, FileManager.LasIO.LasHeader)
-
 		n = header.records_count
 		pointtype = FileManager.LasIO.pointformat(header)
 		pointdata = Vector{pointtype}(undef, n)
+
+
 		push!(boundingBoxes,pAABB([header.x_min,header.y_min,header.z_min],[header.x_max,header.y_max,header.z_max]));
 		push!(numPoints,convert(Int,n));
 		push!(sourceFilenames,args.source)
@@ -71,6 +73,7 @@ function potreeconvert(args::PotreeArguments)
 				flush(writer)
 			end
 		end
+
 	end
 	# close file las
 	println("closing writer")
