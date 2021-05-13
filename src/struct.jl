@@ -25,15 +25,9 @@ mutable struct pAABB
 	max::Vector{Float64}
 	size::Vector{Float64}
 
-	pAABB(min::Vector{Float64},max::Vector{Float64}) = new(min,max,max-min)
+	pAABB() = new([Inf,Inf,Inf],[-Inf,-Inf,-Inf],[NaN,NaN,NaN])
 
-	function pAABB(points::Common.Points)
-		dim = size(points,1)
-		a = [extrema(points[i,:]) for i in 1:dim]
-		min = [a[1][1],a[2][1],a[3][1]]
-		max = [a[1][2],a[2][2],a[3][2]]
-		return pAABB(min,max)
-	end
+	pAABB(min::Vector{Float64},max::Vector{Float64}) = new(min,max,max-min)
 end
 
 struct GridIndex
@@ -41,24 +35,15 @@ struct GridIndex
 	j::Int
 	k::Int
 
-	function GridIndex()
-		return new(0,0,0)
-	end
-
-	function GridIndex(i::Int,j::Int,k::Int)
-		return new(i,j,k)
-	end
-
+	GridIndex() = new(0,0,0)
+	GridIndex(i::Int,j::Int,k::Int) = new(i,j,k)
 end
 
 struct GridCell
     points::Vector{Float64}
     neighbours::Vector{GridCell}
 
-	function GridCell()
-		new(Float64[],Vector{GridCell}(undef,26))
-	end
-
+	GridCell() = new(Float64[],GridCell[])
 end
 
 struct SparseGrid
@@ -91,7 +76,7 @@ end
 
 mutable struct PotreeWriter
 	aabb::pAABB
-	tightAABB::Union{Nothing,pAABB}
+	tightAABB::pAABB
 	workDir::String
 	spacing::Float64
 	scale::Float64

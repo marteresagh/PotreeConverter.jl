@@ -1,5 +1,5 @@
 function PotreeArguments(workDir::String, source::String)
-    aabb = pAABB([Inf,Inf,Inf],[-Inf,-Inf,-Inf])
+    aabb = pAABB()
     pointAttributes = ""
     spacing = 0.
     maxDepth = -1

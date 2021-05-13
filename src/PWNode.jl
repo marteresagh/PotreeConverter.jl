@@ -4,7 +4,7 @@ end
 
 function PWNode(potreeWriter::PotreeWriter,aabb::pAABB)
 	index = -1
-	acceptedAABB = pAABB([Inf,Inf,Inf],[-Inf,-Inf,-Inf])
+	acceptedAABB = pAABB()
 	level = 0
 	numAccepted = 0
 	spacing = get_spacing(potreeWriter.spacing,level)
@@ -32,8 +32,8 @@ function PWNode(potreeWriter::PotreeWriter,aabb::pAABB)
 				isInMemory)
 end
 
-function PWNode(potreeWriter::PotreeWriter,index::Int, aabb::pAABB, level::Int)
-	acceptedAABB = pAABB([Inf,Inf,Inf],[-Inf,-Inf,-Inf])
+function PWNode(potreeWriter::PotreeWriter, index::Int, aabb::pAABB, level::Int)
+	acceptedAABB = pAABB()
 	numAccepted = 0
 	spacing = get_spacing(potreeWriter.spacing,level)
 	parent = nothing
@@ -68,11 +68,7 @@ function name(node::PWNode)::String
 	end
 end
 
-function get_spacing(spacing::Float64,level::Int)::Float64
-	return spacing/2^level
-end
-
-function hierarchyPath(potreeWriter::PotreeWriter,node::PWNode)::String
+function hierarchyPath(node::PWNode,potreeWriter::PotreeWriter)::String
 	path = "r/"
 	hierarchyStepSize = potreeWriter.hierarchyStepSize
 	indices = name(node)[2:end]
@@ -85,8 +81,8 @@ function hierarchyPath(potreeWriter::PotreeWriter,node::PWNode)::String
 	return path
 end
 
-function path(potreeWriter::PotreeWriter,node::PWNode)
-	path = hierarchyPath(potreeWriter,node)*name(node)*".las"
+function path(node::PWNode,potreeWriter::PotreeWriter)::String
+	path = hierarchyPath(node,potreeWriter)*name(node)*".las"
 	return path
 end
 
@@ -94,13 +90,13 @@ function isLeafNode(node::PWNode)::Bool
 	return isempty(node.children)
 end
 
-function isInnerNode(node::PWNode)
+function isInnerNode(node::PWNode)::Bool
 	return length(node.children) > 0
 end
 
-# void loadFromDisk();
+
 function loadFromDisk(node::PWNode, potreeWriter::PotreeWriter)
-	file_node = joinpath(potreeWriter.workDir, "data", path(potreeWriter, node))
+	file_node = joinpath(potreeWriter.workDir, "data", path(node,potreeWriter))
 	open(file_node) do s
 		FileManager.LasIO.skiplasf(s)
 		header = FileManager.LasIO.read(s, FileManager.LasIO.LasHeader)
@@ -123,7 +119,7 @@ function loadFromDisk(node::PWNode, potreeWriter::PotreeWriter)
 	node.isInMemory = true;
 end
 
-# PWNode *add(Point &point);
+
 function add(node::PWNode, point::Point, potreeWriter::PotreeWriter)
 	node.addCalledSinceLastFlush = true;
 	if !node.isInMemory
@@ -133,15 +129,15 @@ function add(node::PWNode, point::Point, potreeWriter::PotreeWriter)
 	if isLeafNode(node)
 		push!(node.store,point)
 		if length(node.store) >= potreeWriter.storeSize
-			split(potreeWriter,node)
+			split(node,potreeWriter)
 		end
 		return node
 	else
 		accepted = false
 		accepted = add(node.grid, point.position)
 		if accepted
-			push!(node.cache,point)
-			update!(node.acceptedAABB,point.position)
+			push!(node.cache, point)
+			update!(node.acceptedAABB, point.position)
 			node.numAccepted+=1
 
 			return node
@@ -156,7 +152,7 @@ function add(node::PWNode, point::Point, potreeWriter::PotreeWriter)
 					node.children = Vector{Union{Nothing,PWNode}}(nothing,8)
 				end
 				if !isnothing(children[childIndex])
-					child = createChild(potreeWriter,node,childIndex);
+					child = createChild(node,childIndex,potreeWriter);
 				else
 					child = node.children[childIndex]
 				end
@@ -169,7 +165,7 @@ function add(node::PWNode, point::Point, potreeWriter::PotreeWriter)
 	end
 end
 
-function createChild(potreeWriter::PotreeWriter, node::PWNode, childIndex::Int)::PWNode
+function createChild(node::PWNode, childIndex::Int, potreeWriter::PotreeWriter)::PWNode
 	cAABB = childAABB(node.aabb, childIndex)
 	child = PWNode(potreeWriter, childIndex, cAABB, node.level+1)
 	child.parent = node.parent
@@ -178,9 +174,9 @@ function createChild(potreeWriter::PotreeWriter, node::PWNode, childIndex::Int):
 	return child
 end
 
-function split(potreeWriter::PotreeWriter, node::PWNode)
+function split(node::PWNode, potreeWriter::PotreeWriter)
 	node.children = Vector{Union{Nothing,PWNode}}(nothing,8)
-	filepath = joinpath(potreeWriter.workDir, "data", path(potreeWriter,node))
+	filepath = joinpath(potreeWriter.workDir, "data", path(node,potreeWriter))
 
 	if isfile(filepath)
 		rm(filepath)
@@ -193,13 +189,13 @@ function split(potreeWriter::PotreeWriter, node::PWNode)
 	node.store = Point[];
 end
 
-# void flush();
+
 function flush(node::PWNode, potreeWriter::PotreeWriter)
 
 	function writeToDisk(points::Vector{Point}, append::Bool)
-		filepath = joinpath(potreeWriter.workDir,"data", path(potreeWriter,node)
+		filepath = joinpath(potreeWriter.workDir,"data", path(node,potreeWriter))
 
-		dir = joinpath(potreeWriter.workDir, "data", hierarchyPath(potreeWriter,node))
+		dir = joinpath(potreeWriter.workDir, "data", hierarchyPath(node,potreeWriter))
 		FileManager.mkdir_if(dir)
 
 		if append
@@ -227,10 +223,10 @@ function flush(node::PWNode, potreeWriter::PotreeWriter)
 
 		# punti da appendere o da salvare
 		for e_c in points
-			write(writer,e_c)
+			# write(writer,e_c) #TODO
 		end
 
-		@assert !append && writer.numPoints == node.numAccepted) "writeToDisk $(writer.numPoints) != $(node.numAccepted)"
+		@assert !append && writer.numPoints == node.numAccepted "writeToDisk $(writer.numPoints) != $(node.numAccepted)"
 	end
 
 
@@ -265,15 +261,13 @@ function flush(node::PWNode, potreeWriter::PotreeWriter)
 
 end
 
-# void traverse(std::function<void(PWNode*)> callback);
-function traverse(this_node::PWNode)
-	for child in this_node.children
-		traverse(child)
-	end
-end
+# # void traverse(std::function<void(PWNode*)> callback);
+# function traverse(this_node::PWNode)
+# 	for child in this_node.children
+# 		traverse(child)
+# 	end
+# end
 
-# void traverseBreadthFirst(std::function<void(PWNode*)> callback);
-#
 # vector<PWNode*> getHierarchy(int levels);
 function getHierarchy(this_node::PWNode,levels::Int)::Vector{PWNode}
 
@@ -299,4 +293,3 @@ function getHierarchy(this_node::PWNode,levels::Int)::Vector{PWNode}
 
 	return hierarchy
 end
-# PWNode* findNode(string name);

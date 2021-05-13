@@ -2,7 +2,7 @@ function PotreeWriter(workDir::String, aabb::pAABB, root::Union{Nothing,PWNode},
 
     outputFormat = OutputFormat
     pointAttributes = "LAS"
-    tightAABB = nothing
+    tightAABB = pAABB()
     numAdded = 0
     numAccepted = 0
     hierarchyStepSize = 5
@@ -77,5 +77,5 @@ end
 function flush(potreeWriter::PotreeWriter)
 	processStore(potreeWriter)
 
-	flush(potreeWriter.root,potreeWriter) #TODO
+	flush(potreeWriter.root,potreeWriter)
 end

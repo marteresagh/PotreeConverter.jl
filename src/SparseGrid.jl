@@ -34,8 +34,7 @@ function add(sparseGrid::SparseGrid,p::Vector{Float64})::Bool
 	index = GridIndex(i,j,k)
 	key = (k << 40) | (j << 20) | i
 	if !haskey(sparseGrid.map,key)
-		cell = GridCell()
-		it = GridCell(sparseGrid, index, cell)
+		it = GridCell(sparseGrid, index)
 		sparseGrid.map[key] = it
 	else
 		it = sparseGrid.map[key]
@@ -82,8 +81,7 @@ function addWithoutCheck(sparseGrid::SparseGrid, p::Vector{Float64}, potreeWrite
 	key = k << 40 | j << 20 | i
 
 	if !haskey(sparseGrid.map,key)
-		cell = GridCell()
-		it = GridCell(sparseGrid, index, cell)
+		it = GridCell(sparseGrid, index)
 		sparseGrid.map[key] = it
 	else
 		it = grid.map[key]

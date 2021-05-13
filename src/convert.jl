@@ -1,6 +1,6 @@
-function writeSources(path::String, sourceFilenames::Vector{String}, numPoints::Vector{Int64}, boundingBoxes::Vector{pAABB})
-	#scrive il json source.js
-end
+# function writeSources(path::String, sourceFilenames::Vector{String}, numPoints::Vector{Int64}, boundingBoxes::Vector{pAABB})
+# 	#scrive il json source.js
+# end
 
 function potreeconvert(args::PotreeArguments)
 

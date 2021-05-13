@@ -55,3 +55,8 @@ function squaredDistanceTo(a::Vector,b::Vector)
 	x,y,z = [a-b]
 	return x*x + y*y + z*z
 end
+
+
+function get_spacing(spacing::Float64,level::Int)::Float64
+	return spacing/2^level
+end
