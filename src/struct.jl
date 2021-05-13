@@ -1,23 +1,13 @@
 struct Point
 	position::Vector{Float64}
-	color::Vector{UInt8}
+	color::Vector{UInt16}
 	normal::Vector{Float64}
-	intensity::UInt8
+	intensity::UInt16
 	classification::Char
 	returnNumber::Char
 	numberOfReturns::Char
-	pointSourceID::UInt8
+	pointSourceID::UInt16
 	gpsTime::Float64
-
-	Point() = new([0.,0.,0.],[255,255,255],[0.,0.,0.],0,0,0,0,0,0.0)
-
-	function Point(x,y,z)
-		new([x,y,z],[255,255,255],[0.,0.,0.],0,0,0,0,0,0.0)
-	end
-
-	function Point(x,y,z,r,g,b)
-		new([x,y,z],[r,g,b],[0.,0.,0.],0,0,0,0,0,0.0)
-	end
 end
 
 mutable struct pAABB

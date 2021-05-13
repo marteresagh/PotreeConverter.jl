@@ -55,15 +55,11 @@ function potreeconvert(args::PotreeArguments)
 		push!(numPoints,convert(Int,n));
 		push!(sourceFilenames,args.source)
 
-		for i=1:n
+		for i in 1:n
 			pointsProcessed += 1
 			pointdata[i] = FileManager.LasIO.read(s, pointtype)
-			p = FileManager.xyz(pointdata[i],header)
-			pt = Point(p...)
-			add(writer, pt)
-			if i == 10
-				break
-			end
+			point = Point(pointdata[i], header)
+			add(writer, point)
 			if pointsProcessed % 1_000_000  == 0
 				processStore(writer)
 				print("INDEXING: ")
@@ -76,9 +72,9 @@ function potreeconvert(args::PotreeArguments)
 			end
 		end
 	end
-	#close file las
-
+	# close file las
 	println("closing writer")
+
 	flush(writer)
 
 	# writeSources() #TODO

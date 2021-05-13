@@ -35,6 +35,7 @@ module PotreeConverter
     include("SparseGrid.jl")
     include("GridCell.jl")
     include("PWNode.jl")
+    include("Point.jl")
     include("convert.jl")
     include("main.jl")
 
