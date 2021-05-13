@@ -199,11 +199,11 @@ function flush(node::PWNode, potreeWriter::PotreeWriter)
 	function writeToDisk(points::Vector{Point}, append::Bool)
 		filepath = joinpath(potreeWriter.workDir,"data", path(potreeWriter,node)
 
-		dir = joinpath(potreeWriter.workDir, "data", hierarchyPath(potreeWriter,node)
+		dir = joinpath(potreeWriter.workDir, "data", hierarchyPath(potreeWriter,node))
 		FileManager.mkdir_if(dir)
 
 		if append
-			temppath = potreeWriter.workDir + "/temp/prepend.las"
+			temppath = joinpath(potreeWriter.workDir,"temp","prepend.las")
 			if isfile(filepath)
 				mv(filepath, temppath)
 			end
@@ -212,7 +212,7 @@ function flush(node::PWNode, potreeWriter::PotreeWriter)
 			# devo costruire l'header e salvare come al solito i punti
 			if isfile(temppath)
 				# PointReader *reader = createReader(temppath);# TODO Apri il file e leggi i punti come prima
-				for p in #pointdata
+				for p in pointdata
 					# write(writer,p);# TODO salva i punti sul file e poi concludo dopo di salvare il resto
 				end
 				rm(temppath)
@@ -227,7 +227,7 @@ function flush(node::PWNode, potreeWriter::PotreeWriter)
 
 		# punti da appendere o da salvare
 		for e_c in points
-			write(writer,e_c);
+			write(writer,e_c)
 		end
 
 		@assert !append && writer.numPoints == node.numAccepted) "writeToDisk $(writer.numPoints) != $(node.numAccepted)"
