@@ -203,23 +203,22 @@ function flush(node::PWNode, potreeWriter::PotreeWriter)
 			if isfile(filepath)
 				mv(filepath, temppath)
 			end
-			# IDEA: leggo i punti da temp uno ad uno e li metto in file
-			# writer = createWriter(filepath);# TODO apro il file per salvare i punti
-			io = open(filepath,"w")
-			if isfile(temppath)
-				open(temppath) do s
 
-					# FileManager.LasIO.skiplasf(s)
-					# header = FileManager.LasIO.read(s, FileManager.LasIO.LasHeader)
-					# n = header.records_count
-					# pointtype = FileManager.LasIO.pointformat(header)
-					# pointdata = Vector{pointtype}(undef, n)
-					#
-					# for i in 1:n
-					# 	pointdata[i] = FileManager.LasIO.read(s, pointtype)
-					# 	point = Point(pointdata[i], header)
-					# write las in new file attenzione che devo costruire l'header #TODO
-					# end
+			if isfile(temppath)
+				io = open(filepath,"w")
+				#appena apro devo salvare l'header
+				open(temppath) do s
+					FileManager.LasIO.skiplasf(s)
+					header = FileManager.LasIO.read(s, FileManager.LasIO.LasHeader)
+					n = header.records_count
+					pointtype = FileManager.LasIO.pointformat(header)
+					pointdata = Vector{pointtype}(undef, n)
+
+
+					for i in 1:n
+						pointdata[i] = FileManager.LasIO.read(s, pointtype)
+						write(io,pointdata[i])
+					end
 
 				end
 				rm(temppath)
@@ -228,14 +227,16 @@ function flush(node::PWNode, potreeWriter::PotreeWriter)
 			if isfile(filepath)
 				rm(filepath)
 			end
-			# IDEA allora li salvo su file i punti
-			# writer = createWriter(filepath);# TODO
+			io = open(filepath,"w")
+			#appena apro devo salvare l'header
 		end
 
 		# punti da appendere o da salvare
 		for e_c in points
-			# write(writer,e_c) #TODO
+			p = FileManager.newPointRecord(e_c.position,reinterpret.(FileManager.N0f16,e_c.color), pointtype, mainHeader)
+			write(io,p)
 		end
+
 		close(io)
 		@assert !append && writer.numPoints == node.numAccepted "writeToDisk $(writer.numPoints) != $(node.numAccepted)"
 	end
