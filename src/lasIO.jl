@@ -14,8 +14,8 @@ function newHeader(aabb::pAABB; software = "potree-julia"::String, sizePointReco
 	version_minor=UInt8(2)
 	system_id=""
 	software_id = software
-	creation_dayofyear = UInt16(FileManager.Dates.dayofyear(today()))
-	creation_year = UInt16(FileManager.Dates.year(today()))
+	creation_dayofyear = UInt16(FileManager.Dates.dayofyear(FileManager.Dates.today()))
+	creation_year = UInt16(FileManager.Dates.year(FileManager.Dates.today()))
 	header_size=UInt16(227) # valore fisso
 	data_offset=UInt16(227) #valore fisso
 	n_vlr=UInt32(0)
@@ -35,7 +35,7 @@ function newHeader(aabb::pAABB; software = "potree-julia"::String, sizePointReco
 	y_min = aabb.min[2]
 	z_max = aabb.max[3]
 	z_min = aabb.min[3]
-	variable_length_records=Vector{LasVariableLengthRecord}()
+	variable_length_records=Vector{FileManager.LasIO.LasVariableLengthRecord}()
 	user_defined_bytes=Vector{UInt8}()
 
 

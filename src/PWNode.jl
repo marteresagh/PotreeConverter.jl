@@ -119,7 +119,7 @@ function loadFromDisk(node::PWNode, potreeWriter::PotreeWriter)
 end
 
 
-function add(node::PWNode, point::Point, potreeWriter::PotreeWriter)
+function add(node::PWNode, point::Point, potreeWriter::PotreeWriter)::Union{Nothing,PWNode}
 	node.addCalledSinceLastFlush = true;
 	if !node.isInMemory
 		loadFromDisk(node,potreeWriter)
@@ -142,7 +142,7 @@ function add(node::PWNode, point::Point, potreeWriter::PotreeWriter)
 			return node
 		else
 			if potreeWriter.maxDepth != -1 && node.level >= potreeWriter.maxDepth
-				return
+				return nothing
 			end
 
 			childIndex = nodeIndex(node.aabb, point.position);
@@ -150,15 +150,15 @@ function add(node::PWNode, point::Point, potreeWriter::PotreeWriter)
 				if isLeafNode(node)
 					node.children = Vector{Union{Nothing,PWNode}}(nothing,8)
 				end
-				if !isnothing(children[childIndex])
+				if isnothing(node.children[childIndex+1])
 					child = createChild(node,childIndex,potreeWriter);
 				else
-					child = node.children[childIndex]
+					child = node.children[childIndex+1]
 				end
 
 				return add(child,point,potreeWriter)
 			 else
-				return
+				return nothing
 			end
 		end
 	end
@@ -168,7 +168,7 @@ function createChild(node::PWNode, childIndex::Int, potreeWriter::PotreeWriter):
 	cAABB = childAABB(node.aabb, childIndex)
 	child = PWNode(potreeWriter, childIndex, cAABB, node.level+1)
 	child.parent = node.parent
-	node.children[childIndex] = child
+	node.children[childIndex+1] = child
 
 	return child
 end
@@ -193,21 +193,26 @@ function flush(node::PWNode, potreeWriter::PotreeWriter)
 
 	function writeToDisk(points::Vector{Point}, append::Bool)
 		filepath = joinpath(potreeWriter.workDir,"data", path(node,potreeWriter))
+		@show filepath
 
 		dir = joinpath(potreeWriter.workDir, "data", hierarchyPath(node,potreeWriter))
 		FileManager.mkdir_if(dir)
+
+		mainHeader = nothing
 
 		if append
 			temppath = joinpath(potreeWriter.workDir,"temp","prepend.las")
 			if isfile(filepath)
 				mv(filepath, temppath)
+				@show isfile(temppath)
 			end
 
+			io = open(filepath,"w")
+			mainHeader = newHeader(node.aabb; npoints = node.numAccepted, scale=potreeWriter.scale)
+			write(io, FileManager.LasIO.magic(FileManager.LasIO.format"LAS"))
+			write(io,mainHeader)
+
 			if isfile(temppath)
-				io = open(filepath,"w")
-				mainHeader = newHeader(node.aabb; npoints = node.numAccepted, scale=potreeWriter.scale)
-				write(io, FileManager.LasIO.magic(FileManager.LasIO.format"LAS"))
-				write(io,mainHeader)
 				#appena apro devo salvare l'header
 				open(temppath) do s
 
@@ -233,13 +238,12 @@ function flush(node::PWNode, potreeWriter::PotreeWriter)
 			mainHeader = newHeader(node.aabb; npoints = node.numAccepted, scale=potreeWriter.scale)
 			write(io, FileManager.LasIO.magic(FileManager.LasIO.format"LAS"))
 			write(io,mainHeader)
-			#appena apro devo salvare l'header
 		end
 
 		# punti da appendere o da salvare
 		for e_c in points
 			p = newPointRecord(e_c.position,
-								reinterpret.(FileManager.N0f16,e_c.color),
+								reinterpret.(FileManager.LasIO.N0f16,e_c.color),
 								FileManager.LasIO.LasPoint2,
 								mainHeader;
 								raw_classification = e_c.classification,
@@ -250,6 +254,7 @@ function flush(node::PWNode, potreeWriter::PotreeWriter)
 		end
 
 		close(io)
+		@show "close file"
 		# @assert !append && writer.numPoints == node.numAccepted "writeToDisk $(writer.numPoints) != $(node.numAccepted)"
 	end
 
@@ -275,13 +280,15 @@ function flush(node::PWNode, potreeWriter::PotreeWriter)
 
 	node.addCalledSinceLastFlush = false
 
-	for i in 1:8
-		if !isnothing(node.children[i])
-			child = node.children[i]
-			flush(child, potreeWriter)
+	@show node.children
+	if !isempty(node.children)
+		for i in 1:8
+			if !isnothing(node.children[i])
+				child = node.children[i]
+				flush(child, potreeWriter)
+			end
 		end
 	end
-
 
 end
 

@@ -37,7 +37,6 @@ end
 
 function isDistant(cell::GridCell, p::Vector{Float64}, squaredSpacing::Float64)
 	for point in cell.points
-		@show p, point
 		if squaredDistanceTo(p,point) < squaredSpacing
 			return false
 		end
