@@ -167,7 +167,7 @@ end
 function createChild(node::PWNode, childIndex::Int, potreeWriter::PotreeWriter)::PWNode
 	cAABB = childAABB(node.aabb, childIndex)
 	child = PWNode(potreeWriter, childIndex, cAABB, node.level+1)
-	child.parent = node.parent
+	child.parent = node
 	node.children[childIndex+1] = child
 
 	return child
@@ -285,6 +285,7 @@ function flush(node::PWNode, potreeWriter::PotreeWriter)
 		for i in 1:8
 			if !isnothing(node.children[i])
 				child = node.children[i]
+				@show child.index
 				flush(child, potreeWriter)
 			end
 		end

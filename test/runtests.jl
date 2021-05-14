@@ -17,3 +17,9 @@ for p in [p0,p1,p2,p3,p4,p5,p6,p7]
     index = PotreeConverter.nodeIndex(aabb, p)
     @show index
 end
+
+potreeWriter = PotreeConverter.PotreeWriter("ciao",aabb,nothing, 0.1, -1, 0.01, PotreeConverter.DEFAULT)
+root = PotreeConverter.PWNode(potreeWriter,aabb)
+potreeWriter.root = root
+potreeWriter.root.children = Vector{Union{Nothing,PotreeConverter.PWNode}}(nothing,8)
+child = PotreeConverter.createChild(potreeWriter.root, 1, potreeWriter)
