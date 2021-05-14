@@ -31,12 +31,13 @@ function GridCell(grid::SparseGrid, index::GridIndex)
 	return this_cell
 end
 
-function add(cell::GridCell,p::Point)
+function add(cell::GridCell,p::Vector{Float64})
 	push!(cell.points,p)
 end
 
 function isDistant(cell::GridCell, p::Vector{Float64}, squaredSpacing::Float64)
 	for point in cell.points
+		@show p, point
 		if squaredDistanceTo(p,point) < squaredSpacing
 			return false
 		end

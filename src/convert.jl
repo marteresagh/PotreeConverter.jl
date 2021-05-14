@@ -86,5 +86,5 @@ function potreeconvert(args::PotreeArguments)
 	percent = percent * 100
 	println("conversion finished")
 	println("$pointsProcessed points were processed and $(writer.numAccepted) points ( $percent% ) were written to the output.")
-	return writer
+	return true
 end

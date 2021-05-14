@@ -52,7 +52,7 @@ function nodeIndex(aabb::pAABB, point::Vector{Float64})::Int
 end
 
 function squaredDistanceTo(a::Vector,b::Vector)
-	x,y,z = [a-b]
+	x,y,z = a-b
 	return x*x + y*y + z*z
 end
 

@@ -43,6 +43,6 @@ function main(source,outdir,pageName)
 	println("levels: $(pc.maxDepth)")
 	println("scale: $(pc.scale)")
 
-	writer = potreeconvert(pc)
+	potreeconvert(pc)
 	return writer;
 end

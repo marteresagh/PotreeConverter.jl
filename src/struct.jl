@@ -30,13 +30,13 @@ struct GridIndex
 end
 
 struct GridCell
-    points::Vector{Float64}
+    points::Vector{Vector{Float64}}
     neighbours::Vector{GridCell}
 
 	GridCell() = new(Float64[],GridCell[])
 end
 
-struct SparseGrid
+mutable struct SparseGrid
 	map::Dict{Int64,GridCell}
     width::Int
     height::Int
