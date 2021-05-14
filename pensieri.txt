@@ -1,4 +1,15 @@
-
 TODO
 
-da concludere il salvataggio del las nel flush del nodo
+1. risolvere problema numerico nell'accettare 6 punti (CAVA nodo r04 (1 punto) r0401 (5 punti) ) al bordo del aabb
+
+2. aggiungere i json
+
+3. aggiungere più source in input
+
+4. salvare file hrc
+
+5. scrivere uno pseudocodice per ricordarmi dell'algoritmo e aggiungi commenti alle funzioni
+
+6. testare con nuvole più grandi per verificare il load from disk e i flush intermedi
+
+7. aggiungi tempi e thread come in originale

@@ -145,13 +145,13 @@ function add(node::PWNode, point::Point, potreeWriter::PotreeWriter)::Union{Noth
 				return nothing
 			end
 
-			childIndex = nodeIndex(node.aabb, point.position);
+			childIndex = nodeIndex(node.aabb, point.position)
 			if childIndex >= 0
 				if isLeafNode(node)
 					node.children = Vector{Union{Nothing,PWNode}}(nothing,8)
 				end
 				if isnothing(node.children[childIndex+1])
-					child = createChild(node,childIndex,potreeWriter);
+					child = createChild(node,childIndex,potreeWriter)
 				else
 					child = node.children[childIndex+1]
 				end
@@ -190,10 +190,9 @@ end
 
 
 function flush(node::PWNode, potreeWriter::PotreeWriter)
-	@show length(node.children)
+
 	function writeToDisk(points::Vector{Point}, append::Bool)
 		filepath = joinpath(potreeWriter.workDir,"data", path(node,potreeWriter))
-		@show filepath
 
 		dir = joinpath(potreeWriter.workDir, "data", hierarchyPath(node,potreeWriter))
 		FileManager.mkdir_if(dir)
@@ -204,7 +203,6 @@ function flush(node::PWNode, potreeWriter::PotreeWriter)
 			temppath = joinpath(potreeWriter.workDir,"temp","prepend.las")
 			if isfile(filepath)
 				mv(filepath, temppath)
-				@show isfile(temppath)
 			end
 
 			io = open(filepath,"w")
@@ -213,9 +211,13 @@ function flush(node::PWNode, potreeWriter::PotreeWriter)
 			write(io,mainHeader)
 
 			if isfile(temppath)
+				@show "temppath file created"
 				#appena apro devo salvare l'header
 				open(temppath) do s
-
+					io = open(filepath,"w")
+					mainHeader = newHeader(node.aabb; npoints = node.numAccepted, scale=potreeWriter.scale)
+					write(io, FileManager.LasIO.magic(FileManager.LasIO.format"LAS"))
+					write(io,mainHeader)
 					FileManager.LasIO.skiplasf(s)
 					header = FileManager.LasIO.read(s, FileManager.LasIO.LasHeader)
 					n = header.records_count
@@ -235,7 +237,7 @@ function flush(node::PWNode, potreeWriter::PotreeWriter)
 				rm(filepath)
 			end
 			io = open(filepath,"w")
-			mainHeader = newHeader(node.aabb; npoints = node.numAccepted, scale=potreeWriter.scale)
+			mainHeader = newHeader(node.aabb; npoints = length(points), scale=potreeWriter.scale)
 			write(io, FileManager.LasIO.magic(FileManager.LasIO.format"LAS"))
 			write(io,mainHeader)
 		end
@@ -254,13 +256,13 @@ function flush(node::PWNode, potreeWriter::PotreeWriter)
 		end
 
 		close(io)
-		@show "close file"
 		# @assert !append && writer.numPoints == node.numAccepted "writeToDisk $(writer.numPoints) != $(node.numAccepted)"
 	end
 
 
 	if isLeafNode(node)
 		if node.addCalledSinceLastFlush
+			println("n_points: $(length(node.store)), points in node: $(reinterpret(Int,node.numAccepted)), name: $(path(node,potreeWriter))")
 			writeToDisk(node.store, false)
 
 		elseif !node.addCalledSinceLastFlush && node.isInMemory
@@ -269,6 +271,7 @@ function flush(node::PWNode, potreeWriter::PotreeWriter)
 		end
 	else
 		if node.addCalledSinceLastFlush
+			println("n_points: $(length(node.cache)), points in node: $(reinterpret(Int,node.numAccepted)), name: $(path(node,potreeWriter))")
 			writeToDisk(node.cache, true)
 
 			node.cache = Point[]
@@ -280,12 +283,10 @@ function flush(node::PWNode, potreeWriter::PotreeWriter)
 
 	node.addCalledSinceLastFlush = false
 
-
 	if !isempty(node.children)
 		for i in 1:8
 			if !isnothing(node.children[i])
 				child = node.children[i]
-				@show child.index
 				flush(child, potreeWriter)
 			end
 		end
@@ -299,29 +300,29 @@ end
 # 		traverse(child)
 # 	end
 # end
-
-# vector<PWNode*> getHierarchy(int levels);
-function getHierarchy(this_node::PWNode,levels::Int)::Vector{PWNode}
-
-	hierarchy = PWNode[]
-
-	stack = Stack{PWNode}()
-	push!(stack,this_node)
-	while isempty(stack)
-		node = pop!(stack)
-
-		if node.level >= this_node.level + levels
-			break
-		end
-
-		push!(hierarchy,node)
-
-		for child in node.children
-			# if child != NULL
-				push!(stack,child)
-			# end
-		end
-	end
-
-	return hierarchy
-end
+#
+# # vector<PWNode*> getHierarchy(int levels);
+# function getHierarchy(this_node::PWNode,levels::Int)::Vector{PWNode}
+#
+# 	hierarchy = PWNode[]
+#
+# 	stack = Stack{PWNode}()
+# 	push!(stack,this_node)
+# 	while isempty(stack)
+# 		node = pop!(stack)
+#
+# 		if node.level >= this_node.level + levels
+# 			break
+# 		end
+#
+# 		push!(hierarchy,node)
+#
+# 		for child in node.children
+# 			# if child != NULL
+# 				push!(stack,child)
+# 			# end
+# 		end
+# 	end
+#
+# 	return hierarchy
+# end

@@ -5,6 +5,7 @@
 function potreeconvert(args::PotreeArguments)
 
     pointsProcessed = 0
+	# writer = nothing
 
 	if isempty(args.aabbValues)
 		args.aabb = calculateAABB(args.source)
@@ -76,9 +77,8 @@ function potreeconvert(args::PotreeArguments)
 
 	end
 	# close file las
-	println("closing writer")
-
 	flush(writer)
+	println("closing writer")
 
 	# writeSources() #TODO
 
@@ -86,5 +86,4 @@ function potreeconvert(args::PotreeArguments)
 	percent = percent * 100
 	println("conversion finished")
 	println("$pointsProcessed points were processed and $(writer.numAccepted) points ( $percent% ) were written to the output.")
-	return true
 end

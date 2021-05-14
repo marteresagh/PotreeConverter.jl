@@ -42,7 +42,7 @@ function main(source,outdir,pageName)
 	println("diagonal-fraction: $(pc.diagonalFraction)")
 	println("levels: $(pc.maxDepth)")
 	println("scale: $(pc.scale)")
+	println(" ")
 
 	potreeconvert(pc)
-	return writer;
 end
