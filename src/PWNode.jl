@@ -104,10 +104,9 @@ function loadFromDisk(node::PWNode, potreeWriter::PotreeWriter)
 		pointtype = FileManager.LasIO.pointformat(header)
 		pointdata = Vector{pointtype}(undef, n)
 
-		for i=1:n
+		for i = 1:n
 			pointdata[i] = FileManager.LasIO.read(s, pointtype)
-			p = FileManager.xyz(pointdata[i],header)
-			pt = Point(p...)
+			p = Point(pointdata[i], header)
 			if isLeafNode(node)
 				push!(node.store,p)
 			else
@@ -206,14 +205,17 @@ function flush(node::PWNode, potreeWriter::PotreeWriter)
 
 			if isfile(temppath)
 				io = open(filepath,"w")
+				mainHeader = newHeader(node.aabb; npoints = node.numAccepted, scale=potreeWriter.scale)
+				write(io, FileManager.LasIO.magic(FileManager.LasIO.format"LAS"))
+				write(io,mainHeader)
 				#appena apro devo salvare l'header
 				open(temppath) do s
+
 					FileManager.LasIO.skiplasf(s)
 					header = FileManager.LasIO.read(s, FileManager.LasIO.LasHeader)
 					n = header.records_count
 					pointtype = FileManager.LasIO.pointformat(header)
 					pointdata = Vector{pointtype}(undef, n)
-
 
 					for i in 1:n
 						pointdata[i] = FileManager.LasIO.read(s, pointtype)
@@ -228,17 +230,27 @@ function flush(node::PWNode, potreeWriter::PotreeWriter)
 				rm(filepath)
 			end
 			io = open(filepath,"w")
+			mainHeader = newHeader(node.aabb; npoints = node.numAccepted, scale=potreeWriter.scale)
+			write(io, FileManager.LasIO.magic(FileManager.LasIO.format"LAS"))
+			write(io,mainHeader)
 			#appena apro devo salvare l'header
 		end
 
 		# punti da appendere o da salvare
 		for e_c in points
-			p = FileManager.newPointRecord(e_c.position,reinterpret.(FileManager.N0f16,e_c.color), pointtype, mainHeader)
+			p = newPointRecord(e_c.position,
+								reinterpret.(FileManager.N0f16,e_c.color),
+								FileManager.LasIO.LasPoint2,
+								mainHeader;
+								raw_classification = e_c.classification,
+								intensity = e_c.intensity,
+								pt_src_id = e_c.pointSourceID,
+								gps_time = e_c.gpsTime)
 			write(io,p)
 		end
 
 		close(io)
-		@assert !append && writer.numPoints == node.numAccepted "writeToDisk $(writer.numPoints) != $(node.numAccepted)"
+		# @assert !append && writer.numPoints == node.numAccepted "writeToDisk $(writer.numPoints) != $(node.numAccepted)"
 	end
 
 

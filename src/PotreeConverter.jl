@@ -36,6 +36,7 @@ module PotreeConverter
     include("GridCell.jl")
     include("PWNode.jl")
     include("Point.jl")
+    include("lasIO.jl")
     include("convert.jl")
     include("main.jl")
 
