@@ -190,7 +190,7 @@ end
 
 
 function flush(node::PWNode, potreeWriter::PotreeWriter)
-
+	@show length(node.children)
 	function writeToDisk(points::Vector{Point}, append::Bool)
 		filepath = joinpath(potreeWriter.workDir,"data", path(node,potreeWriter))
 		@show filepath
@@ -280,7 +280,7 @@ function flush(node::PWNode, potreeWriter::PotreeWriter)
 
 	node.addCalledSinceLastFlush = false
 
-	@show node.children
+
 	if !isempty(node.children)
 		for i in 1:8
 			if !isnothing(node.children[i])
