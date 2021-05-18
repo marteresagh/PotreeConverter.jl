@@ -1,6 +1,38 @@
-# function writeSources(path::String, sourceFilenames::Vector{String}, numPoints::Vector{Int64}, boundingBoxes::Vector{pAABB})
-# 	#scrive il json source.js
-# end
+function writeSources(path::String, sourceFilenames::Vector{String}, numPoints::Vector{Int64}, boundingBoxes::Vector{pAABB})
+	data = DataStructures.OrderedDict()
+	data["bounds"] = DataStructures.OrderedDict()
+	data["projection"] = ""
+	data["sources"] = DataStructures.OrderedDict[]
+
+	bb = pAABB()
+
+	for i in 1:length(sourceFilenames)
+		source = sourceFilenames[i]
+		points = numPoints[i]
+		boundingBox = boundingBoxes[i]
+
+		update!(bb,boundingBox)
+		data_source = DataStructures.OrderedDict()
+		data_source["name"] = splitdir(source)[2]
+		data_source["points"] = points
+		data_source["bounds"] = DataStructures.OrderedDict()
+		data_source["bounds"]["min"] = boundingBox.min
+		data_source["bounds"]["max"] = boundingBox.max
+		push!(data["sources"],data_source)
+	end
+
+	data["bounds"]["min"] = bb.min
+	data["bounds"]["max"] = bb.max
+	#
+	# if(!fs::exists(fs::path(path))){
+	# 	fs::path pcdir(path);
+	# 	fs::create_directories(pcdir);
+	# }
+
+	open(joinpath(path,"source.json"),"w") do f
+        FileManager.JSON.print(f, data, 4)
+    end
+end
 
 function potreeconvert(args::PotreeArguments)
 
@@ -57,6 +89,7 @@ function potreeconvert(args::PotreeArguments)
 			push!(boundingBoxes,pAABB([header.x_min,header.y_min,header.z_min],[header.x_max,header.y_max,header.z_max]));
 			push!(numPoints,convert(Int,n));
 			push!(sourceFilenames,source)
+			writeSources(writer.workDir, sourceFilenames, numPoints, boundingBoxes)
 
 			for i in 1:n
 				pointsProcessed += 1
@@ -82,7 +115,7 @@ function potreeconvert(args::PotreeArguments)
 	flush(writer, cloudjs)
 	println("closing writer")
 
-	# writeSources() #TODO
+	writeSources(workdir, sourceFilenames, numPoints, boundingBoxes)
 
 	percent = writer.numAccepted / pointsProcessed
 	percent = percent * 100

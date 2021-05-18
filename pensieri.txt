@@ -2,9 +2,9 @@ TODO
 
 1. risolvere problema numerico nell'accettare 6 punti (CAVA nodo r04 (1 punto) r0401 (5 punti) ) al bordo del aabb
 
-2. aggiungere i json
+# FATTO 2. aggiungere i json
 
-3. aggiungere più source in input
+# FATTO 3. aggiungere più source in input
 
 4. salvare file hrc
 
