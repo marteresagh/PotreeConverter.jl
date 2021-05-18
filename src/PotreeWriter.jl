@@ -79,9 +79,53 @@ function flush(potreeWriter::PotreeWriter, cloudjs::CloudJS)
 
 	flush(potreeWriter.root,potreeWriter)
 
+	# update and saves cloudjs
 	update!(cloudjs,potreeWriter)
 	save_cloudjs(cloudjs, potreeWriter.workDir)
 
-
 	# write hierarchy
+	hrcTotal = 0
+	hrcFlushed = 0
+
+	stack = PWNode[]
+	push!(stack, potreeWriter.root)
+	while !isempty(stack)
+		node = pop!(stack)
+
+		hrcTotal+=1
+
+		hierarchy = getHierarchy(node,potreeWriter.hierarchyStepSize + 1)
+		needsFlush = false
+		for descendant in hierarchy
+			if descendant.level == node.level + potreeWriter.hierarchyStepSize
+				push!(stack,descendant)
+			end
+
+			needsFlush = needsFlush || descendant.addedSinceLastFlush
+		end
+
+
+		if needsFlush
+			dest = joinpath(potreeWriter.workDir, "data", hierarchyPath(node), name(node)*".hrc")
+			io = open(dest, "w")
+
+			for descendant in hierarchy
+				children = Int8(0)
+				for j in 0:length(descendant.children)-1
+					if !isnothing(descendant.children[j+1])
+						children = children | Int8(1 << j)
+					end
+				end
+
+				write(io,children)
+				write(io,Int32(descendant.numAccepted))
+			end
+
+			close(io)
+			hrcFlushed+=1
+		end
+	end
+
+	traverse(potreeWriter.root, node->node.addedSinceLastFlush = false)
+
 end

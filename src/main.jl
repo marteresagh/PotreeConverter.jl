@@ -2,8 +2,8 @@ function main(sources,outdir,pageName)
 	spacing = 0
 	d = 0
 	levels = -1
-	colorRange=Float64[]
-	intensityRange=Float64[]
+	colorRange = Float64[]
+	intensityRange = Float64[]
 	scale = 0
 	aabbValues = Float64[]
 	storeOption = OVERWRITE
@@ -35,7 +35,9 @@ function main(sources,outdir,pageName)
 	pc.material = material
 
 	println("=== params ===")
-	println("sources: $(pc.sources)")
+	for i in 1:length(pc.sources)
+		println("source[$i]: $(pc.sources[i])")
+	end
 	println("outdir: $(pc.workDir)")
 	println("pageName: $(pc.pageName)")
 	println("spacing: $(pc.spacing)")

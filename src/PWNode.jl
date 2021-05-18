@@ -294,35 +294,36 @@ function flush(node::PWNode, potreeWriter::PotreeWriter)
 
 end
 
-# # void traverse(std::function<void(PWNode*)> callback);
-# function traverse(this_node::PWNode)
-# 	for child in this_node.children
-# 		traverse(child)
-# 	end
-# end
-#
-# # vector<PWNode*> getHierarchy(int levels);
-# function getHierarchy(this_node::PWNode,levels::Int)::Vector{PWNode}
-#
-# 	hierarchy = PWNode[]
-#
-# 	stack = Stack{PWNode}()
-# 	push!(stack,this_node)
-# 	while isempty(stack)
-# 		node = pop!(stack)
-#
-# 		if node.level >= this_node.level + levels
-# 			break
-# 		end
-#
-# 		push!(hierarchy,node)
-#
-# 		for child in node.children
-# 			# if child != NULL
-# 				push!(stack,child)
-# 			# end
-# 		end
-# 	end
-#
-# 	return hierarchy
-# end
+# void traverse(std::function<void(PWNode*)> callback);
+function traverse(this_node::PWNode, callback::Function)
+	callback(this_node)
+	for child in this_node.children
+		traverse(child, callback)
+	end
+end
+
+# vector<PWNode*> getHierarchy(int levels);
+function getHierarchy(this_node::PWNode,levels::Int)::Vector{PWNode}
+
+	hierarchy = PWNode[]
+
+	stack = PWNode[]
+	push!(stack,this_node)
+	while !isempty(stack)
+		node = pop!(stack)
+
+		if node.level >= this_node.level + levels
+			break
+		end
+
+		push!(hierarchy,node)
+
+		for child in node.children
+			if !isnothing(child)
+				push!(stack,child)
+			end
+		end
+	end
+
+	return hierarchy
+end
