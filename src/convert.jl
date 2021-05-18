@@ -60,15 +60,37 @@ function potreeconvert(args::PotreeArguments)
 	workdir = FileManager.mkdir_project(args.workDir, args.pageName)
 	if isfile(joinpath(workdir,"cloud.js"))
 		if args.storeOption == ABORT_IF_EXISTS
+			println("ABORTING CONVERSION: target already exists:  $(joinpath(workdir,"cloud.js"))")
+			println("If you want to overwrite the existing conversion, specify --overwrite")
+			println("If you want add new points to the existing conversion, make sure the new points ")
+			println("are contained within the bounding box of the existing conversion and then specify --incremental")
 			return 0
+		elseif args.storeOption == OVERWRITE
+			clearfolder(joinpath(workdir,"data"))
+			clearfolder(joinpath(workdir,"temp"))
+			rm(joinpath(workdir,"cloud.js"))
+
+			# new writer
+			writer = PotreeWriter(workdir, args.aabb, PWNode(), args.spacing, args.maxDepth, args.scale, args.quality)
+			root = PWNode(writer,args.aabb)
+			writer.root = root
+			cloudjs = CloudJS()
+			update!(cloudjs, writer)
+
+		elseif args.storeOption == INCREMENTAL
+			#TODO
+			# writer = PotreeWriter(workdir, args.quality)
+			# writer = loadStateFromDisk()
 		end
 	else
+		# new writer
 		writer = PotreeWriter(workdir, args.aabb, PWNode(), args.spacing, args.maxDepth, args.scale, args.quality)
 		root = PWNode(writer,args.aabb)
 		writer.root = root
 		cloudjs = CloudJS()
 		update!(cloudjs, writer)
 	end
+
 	writer.storeSize = args.storeSize
 
 	boundingBoxes = pAABB[]
@@ -89,7 +111,7 @@ function potreeconvert(args::PotreeArguments)
 			push!(boundingBoxes,pAABB([header.x_min,header.y_min,header.z_min],[header.x_max,header.y_max,header.z_max]));
 			push!(numPoints,convert(Int,n));
 			push!(sourceFilenames,source)
-			writeSources(writer.workDir, sourceFilenames, numPoints, boundingBoxes)
+			# writeSources(writer.workDir, sourceFilenames, numPoints, boundingBoxes)
 
 			for i in 1:n
 				pointsProcessed += 1
