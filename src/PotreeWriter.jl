@@ -80,5 +80,8 @@ function flush(potreeWriter::PotreeWriter, cloudjs::CloudJS)
 	flush(potreeWriter.root,potreeWriter)
 
 	update!(cloudjs,potreeWriter)
-	save_cloudjs(cloudjs, potreeWriter.workdir)
+	save_cloudjs(cloudjs, potreeWriter.workDir)
+
+
+	# write hierarchy
 end

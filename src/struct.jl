@@ -86,7 +86,7 @@ end
 
 mutable struct PotreeArguments
 	aabb::pAABB
-	source::String
+	sources::Vector{String}
 	workDir::String
 	pointAttributes::String
 	spacing::Float64
@@ -106,6 +106,11 @@ mutable struct PotreeArguments
 	flushLimit::Int
 end
 
+
+struct Node
+	name::String
+	pointCount::Int
+end
 
 mutable struct CloudJS
 	version::String

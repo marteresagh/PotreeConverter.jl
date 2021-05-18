@@ -126,3 +126,19 @@ function newPointRecord(point::Array{Float64,1},
 	end
 
 end
+
+function read(fname::String)
+	if endswith(fname,".las")
+		header, laspoints = FileManager.LasIO.FileIO.load(fname)
+	elseif endswith(fname,".laz")
+		header, laspoints = FileManager.LazIO.load(fname)
+	end
+	return header,laspoints
+end
+
+function las2aabb(file::String)::pAABB
+	header, p = read(file)
+
+	aabb = LasIO.boundingbox(header)
+	return pAABB([aabb.xmin, aabb.ymin, aabb.zmin], [aabb.xmax, aabb.ymax, aabb.zmax])
+end

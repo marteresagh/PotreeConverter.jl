@@ -46,7 +46,11 @@ function calculateAABB(aabb::Vector{Float64})::pAABB
 	return pAABB([aabb[1],aabb[2],aabb[3]],[aabb[4],aabb[5],aabb[6]])
 end
 
-function calculateAABB(source::String)::pAABB
-	aabb = FileManager.las2aabb(source)
-	return pAABB([aabb.x_min,aabb.y_min,aabb.z_min],[aabb.x_max,aabb.y_max,aabb.z_max])
+function calculateAABB(sources::Vector{String})::pAABB
+	aabb = pAABB()
+	for source in sources
+		laabb = las2aabb(source)
+		update!(aabb, laabb)
+	end
+	return aabb
 end

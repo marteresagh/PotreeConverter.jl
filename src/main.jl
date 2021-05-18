@@ -1,4 +1,4 @@
-function main(source,outdir,pageName)
+function main(sources,outdir,pageName)
 	spacing = 0
 	d = 0
 	levels = -1
@@ -19,7 +19,7 @@ function main(source,outdir,pageName)
 		d = 200
 	end
 
-	pc = PotreeArguments(outdir,source)
+	pc = PotreeArguments(outdir,sources)
 	pc.spacing = spacing
 	pc.diagonalFraction = d
 	pc.maxDepth = levels
@@ -35,7 +35,7 @@ function main(source,outdir,pageName)
 	pc.material = material
 
 	println("=== params ===")
-	println("source: $(pc.source)")
+	println("sources: $(pc.sources)")
 	println("outdir: $(pc.workDir)")
 	println("pageName: $(pc.pageName)")
 	println("spacing: $(pc.spacing)")

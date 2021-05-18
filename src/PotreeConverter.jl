@@ -37,6 +37,7 @@ module PotreeConverter
     include("PWNode.jl")
     include("Point.jl")
     include("lasIO.jl")
+    include("cloudjs.jl")
     include("convert.jl")
     include("main.jl")
 

@@ -1,4 +1,4 @@
-function PotreeArguments(workDir::String, source::String)
+function PotreeArguments(workDir::String, sources::Vector{String})
     aabb = pAABB()
     pointAttributes = ""
     spacing = 0.
@@ -17,7 +17,7 @@ function PotreeArguments(workDir::String, source::String)
     storeSize = 20_000
     flushLimit = 10_000_000
     return PotreeArguments(aabb,
-            source,
+            sources,
             workDir,
             pointAttributes,
             spacing,
