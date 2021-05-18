@@ -34,6 +34,7 @@ function potreeconvert(args::PotreeArguments)
 		writer = PotreeWriter(workdir, args.aabb, PWNode(), args.spacing, args.maxDepth, args.scale, args.quality)
 		root = PWNode(writer,args.aabb)
 		writer.root = root
+		update!(cloudjs, writer)
 	end
 	writer.storeSize = args.storeSize
 
@@ -71,13 +72,13 @@ function potreeconvert(args::PotreeArguments)
 			end
 			if pointsProcessed % args.flushLimit == 0
 				println("FLUSHING: ")
-				flush(writer)
+				flush(writer, cloudjs)
 			end
 		end
 
 	end
 	# close file las
-	flush(writer)
+	flush(writer, cloudjs)
 	println("closing writer")
 
 	# writeSources() #TODO
@@ -86,4 +87,9 @@ function potreeconvert(args::PotreeArguments)
 	percent = percent * 100
 	println("conversion finished")
 	println("$pointsProcessed points were processed and $(writer.numAccepted) points ( $percent% ) were written to the output.")
+
+	# saves Cloud.js
+
+
+
 end

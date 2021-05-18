@@ -262,7 +262,7 @@ function flush(node::PWNode, potreeWriter::PotreeWriter)
 
 	if isLeafNode(node)
 		if node.addCalledSinceLastFlush
-			println("n_points: $(length(node.store)), points in node: $(reinterpret(Int,node.numAccepted)), name: $(path(node,potreeWriter))")
+			# println("n_points: $(length(node.store)), points in node: $(reinterpret(Int,node.numAccepted)), name: $(path(node,potreeWriter))")
 			writeToDisk(node.store, false)
 
 		elseif !node.addCalledSinceLastFlush && node.isInMemory
@@ -271,7 +271,7 @@ function flush(node::PWNode, potreeWriter::PotreeWriter)
 		end
 	else
 		if node.addCalledSinceLastFlush
-			println("n_points: $(length(node.cache)), points in node: $(reinterpret(Int,node.numAccepted)), name: $(path(node,potreeWriter))")
+			# println("n_points: $(length(node.cache)), points in node: $(reinterpret(Int,node.numAccepted)), name: $(path(node,potreeWriter))")
 			writeToDisk(node.cache, true)
 
 			node.cache = Point[]

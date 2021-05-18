@@ -105,3 +105,47 @@ mutable struct PotreeArguments
 	storeSize::Int
 	flushLimit::Int
 end
+
+
+mutable struct CloudJS
+	version::String
+	octreeDir::String
+	boundingBox::pAABB
+	tightBoundingBox::pAABB
+	outputFormat::String
+	pointAttributes::String
+	spacing::Float64
+	hierarchy::Vector{Node}
+	scale::Float64
+	hierarchyStepSize::Int
+	numAccepted::Int
+	projection::String
+
+	function CloudJS()
+		version = ""
+		octreeDir = ""
+		boundingBox = pAABB()
+		tightBoundingBox = pAABB()
+		outputFormat = OutputFormat
+		pointAttributes = OutputFormat
+		spacing = 0.0
+		hierarchy = Vector{Node}[]
+		scale = 0.0
+		hierarchyStepSize = -1
+		numAccepted = 0
+		projection = ""
+		return new(version,
+				octreeDir,
+				boundingBox,
+				tightBoundingBox,
+				outputFormat,
+				pointAttributes,
+				spacing,
+				hierarchy,
+				scale,
+				hierarchyStepSize,
+				numAccepted,
+				projection,
+				)
+	end
+end

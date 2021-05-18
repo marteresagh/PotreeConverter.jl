@@ -74,8 +74,11 @@ function processStore(potreeWriter::PotreeWriter)
 end
 
 
-function flush(potreeWriter::PotreeWriter)
+function flush(potreeWriter::PotreeWriter, cloudjs::CloudJS)
 	processStore(potreeWriter)
 
 	flush(potreeWriter.root,potreeWriter)
+
+	update!(cloudjs,potreeWriter)
+	save_cloudjs(cloudjs, potreeWriter.workdir)
 end
