@@ -1,23 +1,15 @@
 using PotreeConverter
 using FileManager
 
-mutable struct Node
-	value::Int
-	children::Vector{Node}
-end
+
+raww = read(raw"C:\Users\marte\Documents\GEOWEB\TEST\Potree\pointclouds\TEST\data\r\r.hrc")
+myraw = read(raw"C:\Users\marte\Documents\GEOWEB\TEST\Potree\CAVA\data\r\r.hrc")
+
+treehrc = reshape(raww, (5, div(length(raww), 5)))
 
 
-this_node = Node(1,[Node(2,Node[]), Node(3,Node[])])
 
-function callback(node::Node)
-	node.value = 0
-end
 
-function traverse(this_node::Node, callback::Function)
-	callback(this_node)
-	for child in this_node.children
-		traverse(child, callback)
-	end
-end
 
- traverse(this_node, callback)
+
+mytreehrc = reshape(myraw, (5, div(length(myraw), 5)))

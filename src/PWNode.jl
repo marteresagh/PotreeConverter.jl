@@ -298,7 +298,9 @@ end
 function traverse(this_node::PWNode, callback::Function)
 	callback(this_node)
 	for child in this_node.children
-		traverse(child, callback)
+		if !isnothing(child)
+			traverse(child, callback)
+		end
 	end
 end
 
@@ -307,7 +309,7 @@ function getHierarchy(this_node::PWNode,levels::Int)::Vector{PWNode}
 
 	hierarchy = PWNode[]
 
-	stack = PWNode[]
+	stack = FileManager.Stack{PWNode}()
 	push!(stack,this_node)
 	while !isempty(stack)
 		node = pop!(stack)

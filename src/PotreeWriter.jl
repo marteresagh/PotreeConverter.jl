@@ -87,7 +87,7 @@ function flush(potreeWriter::PotreeWriter, cloudjs::CloudJS)
 	hrcTotal = 0
 	hrcFlushed = 0
 
-	stack = PWNode[]
+	stack = FileManager.Stack{PWNode}()
 	push!(stack, potreeWriter.root)
 	while !isempty(stack)
 		node = pop!(stack)
@@ -106,19 +106,33 @@ function flush(potreeWriter::PotreeWriter, cloudjs::CloudJS)
 
 
 		if needsFlush
-			dest = joinpath(potreeWriter.workDir, "data", hierarchyPath(node), name(node)*".hrc")
+			dest = joinpath(potreeWriter.workDir, "data", hierarchyPath(node,potreeWriter), name(node)*".hrc")
 			io = open(dest, "w")
 
 			for descendant in hierarchy
-				children = Int8(0)
+				children = 0
 				for j in 0:length(descendant.children)-1
 					if !isnothing(descendant.children[j+1])
-						children = children | Int8(1 << j)
+						children = children | 1 << j
 					end
 				end
 
-				write(io,children)
-				write(io,Int32(descendant.numAccepted))
+
+				function to_bytes(n::Integer; bigendian=true, len=sizeof(n))
+				   bytes = Array{UInt8}(undef, len)
+				   for byte in (bigendian ? (1:len) : reverse(1:len))
+				       bytes[byte] = n & 0xff
+				       n >>= 8
+				   end
+				   return bytes
+				end
+
+				write(io,to_bytes(children; len=1))
+				bytes = to_bytes(descendant.numAccepted; len=4)
+				write(io,bytes[1])
+				write(io,bytes[2])
+				write(io,bytes[3])
+				write(io,bytes[4])
 			end
 
 			close(io)
