@@ -37,7 +37,8 @@ function PotreeWriter(workDir::String, aabb::pAABB, root::Union{Nothing,PWNode},
             store,
             pointsInMemory,
             quality,
-            storeSize)
+            storeSize,
+			nothing)
 end
 
 
@@ -73,9 +74,15 @@ function PotreeWriter(workDir::String, quality::ConversionQuality )
             store,
             pointsInMemory,
             quality,
-            storeSize)
+            storeSize,
+			nothing)
 end
 
+function waitUntilProcessed(potreeWriter::PotreeWriter)
+	if !isnothing(potreeWriter.storeThread)
+		wait(potreeWriter.storeThread)
+	end
+end
 
 function add(potreeWriter::PotreeWriter,p::Point)
 	if potreeWriter.numAdded == 0
@@ -98,22 +105,25 @@ function processStore(potreeWriter::PotreeWriter)
 	st = copy(potreeWriter.store)
 	potreeWriter.store = Point[]
 
-	for p in st
-		acceptedBy = add(potreeWriter.root, p, potreeWriter)
-		if !isnothing(acceptedBy)
-			update!(potreeWriter.tightAABB,p.position)
+	waitUntilProcessed(potreeWriter)
 
-			potreeWriter.pointsInMemory+=1
-			potreeWriter.numAccepted+=1
+
+	 potreeWriter.storeThread = Threads.@spawn for p in st
+			acceptedBy = add(potreeWriter.root, p, potreeWriter)
+			if !isnothing(acceptedBy)
+				update!(potreeWriter.tightAABB,p.position)
+
+				potreeWriter.pointsInMemory+=1
+				potreeWriter.numAccepted+=1
+			end
 		end
-	end
 
 end
 
 
 function flush(potreeWriter::PotreeWriter, cloudjs::CloudJS)
 	processStore(potreeWriter)
-
+	waitUntilProcessed(potreeWriter::PotreeWriter)
 	flush(potreeWriter.root,potreeWriter)
 
 	# update and saves cloudjs

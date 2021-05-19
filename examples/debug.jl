@@ -1,16 +1,33 @@
-using PotreeConverter
-using FileManager
+using Base.Threads
 
-myfile = raw"C:\Users\marte\Documents\GEOWEB\TEST\Potree\CAVA\data\r\r04.las"
-potreefile = raw"C:\Users\marte\Documents\GEOWEB\TEST\Potree\pointclouds\TEST\data\r\r04.las"
+some_function_call_1() = begin
+    println("some_function_call_1, ", Threads.threadid())
+    sleep(rand())
+end
+some_function_call_2() = begin
+    println("some_function_call_2, ", Threads.threadid())
+    sleep(rand())
+end
+do_main_work(iter) = begin
+    println("do_main_work, $(iter), ", Threads.threadid())
+    sleep(rand())
+end
 
-my_aabb = FileManager.las2aabb(myfile)
+some_task = Threads.@spawn begin
+    some_function_call_1()
+    some_function_call_2()
+end
 
+for rep in 1:3
+    Threads.@threads for iter in 1:4
+        do_main_work(iter)
+    end
+    global some_task
+    wait(some_task)
+    some_task = Threads.@spawn begin
+        some_function_call_1()
+        some_function_call_2()
+    end
+end
 
-
-
-
-
-
-
-potree_aabb = FileManager.las2aabb(potreefile)
+wait(some_task)

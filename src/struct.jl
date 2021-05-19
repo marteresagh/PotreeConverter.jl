@@ -81,6 +81,7 @@ mutable struct PotreeWriter
 	pointsInMemory::Int
 	quality::ConversionQuality
 	storeSize::Int64
+	storeThread::Union{Nothing,Task}
 end
 
 

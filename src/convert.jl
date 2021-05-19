@@ -119,6 +119,7 @@ function potreeconvert(args::PotreeArguments)
 				add(writer, point)
 				if pointsProcessed % 1_000_000  == 0
 					processStore(writer)
+					waitUntilProcessed(writer)
 
 					elapsed = time() - start
 					print("INDEXING: ")
