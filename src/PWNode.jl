@@ -309,10 +309,10 @@ function getHierarchy(this_node::PWNode,levels::Int)::Vector{PWNode}
 
 	hierarchy = PWNode[]
 
-	stack = FileManager.Stack{PWNode}()
+	stack = PWNode[]
 	push!(stack,this_node)
 	while !isempty(stack)
-		node = pop!(stack)
+		node = popfirst!(stack)
 
 		if node.level >= this_node.level + levels
 			break

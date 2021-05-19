@@ -87,10 +87,10 @@ function flush(potreeWriter::PotreeWriter, cloudjs::CloudJS)
 	hrcTotal = 0
 	hrcFlushed = 0
 
-	stack = FileManager.Stack{PWNode}()
+	stack = PWNode[]
 	push!(stack, potreeWriter.root)
 	while !isempty(stack)
-		node = pop!(stack)
+		node = popfirst!(stack)
 
 		hrcTotal+=1
 
