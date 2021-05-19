@@ -40,6 +40,43 @@ function PotreeWriter(workDir::String, aabb::pAABB, root::Union{Nothing,PWNode},
             storeSize)
 end
 
+
+function PotreeWriter(workDir::String, quality::ConversionQuality )
+
+    outputFormat = OutputFormat
+    pointAttributes = "LAS"
+	aabb = pAABB()
+    tightAABB = pAABB()
+    numAdded = 0
+    numAccepted = 0
+    hierarchyStepSize = 5
+    pointsInMemory = 0
+    storeSize = 20_000
+    store = Point[]
+	scale = 0.
+	spacing = 0.
+	maxDepth = -1
+	root = PWNode()
+
+    return PotreeWriter(aabb,
+            tightAABB,
+            workDir,
+            spacing,
+            scale,
+            maxDepth,
+            root,
+            numAdded,
+            numAccepted,
+            outputFormat,
+            pointAttributes,
+            hierarchyStepSize,
+            store,
+            pointsInMemory,
+            quality,
+            storeSize)
+end
+
+
 function add(potreeWriter::PotreeWriter,p::Point)
 	if potreeWriter.numAdded == 0
 		dataDir = joinpath(potreeWriter.workDir,"data")
@@ -142,4 +179,91 @@ function flush(potreeWriter::PotreeWriter, cloudjs::CloudJS)
 
 	traverse(potreeWriter.root, node->node.addedSinceLastFlush = false)
 
+end
+
+
+function loadStateFromDisk(potreeWriter::PotreeWriter)
+	# cloudjs
+	cloudJSPath = joinpath(potreeWriter.workDir, "cloud.js")
+
+	cloudjs = CloudJS()
+	dict = nothing
+	open(cloudJSPath, "r") do f
+		dict = FileManager.JSON.parse(f)
+	end
+
+	cloudjs.version = dict["version"]
+	cloudjs.octreeDir = dict["octreeDir"]
+	cloudjs.boundingBox = pAABB([dict["boundingBox"]["lx"],dict["boundingBox"]["ly"],dict["boundingBox"]["lz"]],
+								[dict["boundingBox"]["ux"],dict["boundingBox"]["uy"],dict["boundingBox"]["uz"]])
+	cloudjs.tightBoundingBox = pAABB([dict["tightBoundingBox"]["lx"],dict["tightBoundingBox"]["ly"],dict["tightBoundingBox"]["lz"]],
+								[dict["tightBoundingBox"]["ux"],dict["tightBoundingBox"]["uy"],dict["tightBoundingBox"]["uz"]])
+	cloudjs.outputFormat = dict["pointAttributes"]
+	cloudjs.pointAttributes = dict["pointAttributes"]
+	cloudjs.spacing = dict["spacing"]
+	cloudjs.scale = dict["scale"]
+	cloudjs.hierarchyStepSize = dict["hierarchyStepSize"]
+	cloudjs.numAccepted = dict["points"]
+	cloudjs.projection = dict["projection"]
+	# end cloudjs
+
+	# potreeWriter
+	potreeWriter.outputFormat = cloudjs.outputFormat
+	potreeWriter.pointAttributes = cloudjs.pointAttributes
+	potreeWriter.hierarchyStepSize = cloudjs.hierarchyStepSize
+	potreeWriter.spacing = cloudjs.spacing
+	potreeWriter.scale = cloudjs.scale
+	potreeWriter.aabb = cloudjs.boundingBox
+	potreeWriter.numAccepted = cloudjs.numAccepted
+	# end potreeWriter
+
+	# tree
+	rootDir = joinpath(potreeWriter.workDir,"data","r")
+	hrcPaths = FileManager.searchfile(rootDir,".hrc")
+
+	sort!(hrcPaths, by=length)
+
+	root = PWNode(potreeWriter, cloudjs.boundingBox);
+	for hrcPath in hrcPaths
+		filename = splitdir(hrcPath)[2]
+		hrcName = String(Base.split(filename, ".")[1])
+		hrcRoot = findNode(root,hrcName)
+
+		current = hrcRoot
+		current.addedSinceLastFlush = false
+		current.isInMemory = false
+		nodes = PWNode[]
+		push!(nodes,hrcRoot)
+
+		raw = Base.read(hrcPath)
+		treehrc = reshape(raw, (5, div(length(raw), 5)))
+
+		for i in 1:size(treehrc,2)
+			children = Int(treehrc[1,i])
+			numPoints = parse(Int, bitstring(UInt8(treehrc[5,i]))*bitstring(UInt8(treehrc[4,i]))*bitstring(UInt8(treehrc[3,i]))*bitstring(UInt8(treehrc[2,i])); base=2)
+			current = nodes[i]
+
+			current.numAccepted = numPoints
+
+			if children != 0
+				current.children = Vector{Union{Nothing,PWNode}}(nothing,8)
+				for j in 0:7
+					if children & (1 << j) != 0
+						cAABB = childAABB(current.aabb, j)
+						child = PWNode(potreeWriter, j, cAABB, current.level + 1);
+						child.parent = current
+						child.addedSinceLastFlush = false
+						child.isInMemory = false
+						current.children[j+1] = child
+						push!(nodes,child)
+					end
+				end
+			end
+		end
+	end
+
+	potreeWriter.root = root
+	# end tree
+
+	return cloudjs
 end

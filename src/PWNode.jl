@@ -110,7 +110,7 @@ function loadFromDisk(node::PWNode, potreeWriter::PotreeWriter)
 			if isLeafNode(node)
 				push!(node.store,p)
 			else
-				addWithoutCheck(node.grid, p, potreeWriter)
+				addWithoutCheck(node.grid, p.position, potreeWriter)
 			end
 		end
 	end
@@ -328,4 +328,22 @@ function getHierarchy(this_node::PWNode,levels::Int)::Vector{PWNode}
 	end
 
 	return hierarchy
+end
+
+
+function findNode(node::PWNode, ref_name::String)
+	thisName = name(node)
+
+	if length(ref_name) == length(thisName)
+		return ref_name == thisName ? node : nothing
+	elseif length(ref_name) > length(thisName)
+		childIndex = parse(Int,ref_name[length(thisName)+1])
+		if !isLeafNode(node) && !isnothing(node.children[childIndex+1])
+			return findNode(node.children[childIndex],ref_name);
+		else
+			return nothing
+		end
+	else
+		return nothing
+	end
 end

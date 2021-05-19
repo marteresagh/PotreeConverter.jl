@@ -2,14 +2,13 @@ using PotreeConverter
 using FileManager
 
 
-raww = read(raw"C:\Users\marte\Documents\GEOWEB\TEST\Potree\pointclouds\TEST\data\r\r.hrc")
-myraw = read(raw"C:\Users\marte\Documents\GEOWEB\TEST\Potree\CAVA\data\r\r.hrc")
+raw = read(raw"C:\Users\marte\Documents\GEOWEB\TEST\Potree\CAVA\data\r\r.hrc")
+treehrc = reshape(raw, (5, div(length(raw), 5)))
 
-treehrc = reshape(raww, (5, div(length(raww), 5)))
-
-
-
-
-
-
-mytreehrc = reshape(myraw, (5, div(length(myraw), 5)))
+for i in 1:size(treehrc,2)
+    children = Int(treehrc[1,i])
+    @show children
+    npoints = parse(Int, bitstring(UInt8(treehrc[5,i]))*bitstring(UInt8(treehrc[4,i]))*bitstring(UInt8(treehrc[3,i]))*bitstring(UInt8(treehrc[2,i])); base=2)
+    @show npoints
+    break
+end

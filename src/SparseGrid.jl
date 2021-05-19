@@ -84,8 +84,8 @@ function addWithoutCheck(sparseGrid::SparseGrid, p::Vector{Float64}, potreeWrite
 		it = GridCell(sparseGrid, index)
 		sparseGrid.map[key] = it
 	else
-		it = grid.map[key]
+		it = sparseGrid.map[key]
 	end
 
-	add(it,p,potreeWriter)
+	add(it,p)
 end

@@ -6,7 +6,7 @@ function main(sources,outdir,pageName)
 	intensityRange = Float64[]
 	scale = 0
 	aabbValues = Float64[]
-	storeOption = OVERWRITE
+	storeOption = ABORT_IF_EXISTS
 	outFormat = OutputFormat
 	outputAttributes = ["RGB"]
 	conversionQuality = DEFAULT

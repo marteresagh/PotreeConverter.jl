@@ -78,9 +78,9 @@ function potreeconvert(args::PotreeArguments)
 			update!(cloudjs, writer)
 
 		elseif args.storeOption == INCREMENTAL
-			#TODO
-			# writer = PotreeWriter(workdir, args.quality)
-			# writer = loadStateFromDisk()
+			writer = PotreeWriter(workdir, args.quality)
+			cloudjs = loadStateFromDisk(writer)
+			return writer
 		end
 	else
 		# new writer
