@@ -35,7 +35,7 @@ function writeSources(path::String, sourceFilenames::Vector{String}, numPoints::
 end
 
 function potreeconvert(args::PotreeArguments)
-
+ 	start = time()
     pointsProcessed = 0
 	# writer = nothing
 
@@ -80,7 +80,6 @@ function potreeconvert(args::PotreeArguments)
 		elseif args.storeOption == INCREMENTAL
 			writer = PotreeWriter(workdir, args.quality)
 			cloudjs = loadStateFromDisk(writer)
-			return writer
 		end
 	else
 		# new writer
@@ -120,13 +119,19 @@ function potreeconvert(args::PotreeArguments)
 				add(writer, point)
 				if pointsProcessed % 1_000_000  == 0
 					processStore(writer)
+
+					elapsed = time() - start
 					print("INDEXING: ")
-					print("$pointsProcessed points processed;")
+					print("$pointsProcessed points processed; ")
 					print("$(writer.numAccepted) points written; ")
+					println("$elapsed second passed")
 				end
 				if pointsProcessed % args.flushLimit == 0
-					println("FLUSHING: ")
+					print("FLUSHING: ")
+					start_ = time()
 					flush(writer, cloudjs)
+					elapsed = time() - start_
+					println("$elapsed s")
 				end
 			end
 
@@ -141,11 +146,8 @@ function potreeconvert(args::PotreeArguments)
 
 	percent = writer.numAccepted / pointsProcessed
 	percent = percent * 100
+	duration = time() - start
 	println("conversion finished")
 	println("$pointsProcessed points were processed and $(writer.numAccepted) points ( $percent% ) were written to the output.")
-
-	# saves Cloud.js
-
-
-
+	println("duration: $duration s")
 end

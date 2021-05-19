@@ -211,7 +211,6 @@ function flush(node::PWNode, potreeWriter::PotreeWriter)
 			write(io,mainHeader)
 
 			if isfile(temppath)
-				@show "temppath file created"
 				#appena apro devo salvare l'header
 				open(temppath) do s
 					io = open(filepath,"w")

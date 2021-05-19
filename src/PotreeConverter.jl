@@ -2,7 +2,13 @@ module PotreeConverter
 
     using Common
     using FileManager
-
+    using Printf
+    macro format(ex)
+       quote
+           Base.show(io::IO, x::Float64) = write(io, @sprintf($ex, x))
+       end
+    end
+    @format "%f"
     # PER ORA SOLO LAS
     # enum class OutputFormat{
     # 	BINARY,
