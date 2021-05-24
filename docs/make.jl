@@ -1,19 +1,6 @@
 using Documenter
 using PotreeConverter
 
-# makedocs(
-# 	format = Documenter.HTML(),
-# 	sitename = "OrthographicProjection.jl",
-# 	#assets = ["assets/OrthographicProjection.css", "assets/logo.jpg"],
-# 	modules = [OrthographicProjection]
-# )
-#
-#
-# deploydocs(
-# 	repo = "github.com/marteresagh/OrthographicProjection.jl.git"
-# )
-
-
 makedocs(
     modules = [PotreeConverter],
     format = Documenter.HTML(
