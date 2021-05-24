@@ -4,4 +4,28 @@ TODO
 
 5. scrivere uno pseudocodice per ricordarmi dell'algoritmo e aggiungi commenti alle funzioni
 
-7. aggiungi thread
+
+# Pseudo code
+
+1. calcolo dei parametri iniziali
+
+2. creazione root
+
+3. lettura del file
+per ogni punto nel file
+    4. aggiungo i punti al writer
+    5. superati 1 milione di punti
+        processo il writer
+    6. superati i 10 milioni scarico in memoria
+end
+
+nel dettaglio 4.
+1. fino a 10 mila punti non faccio nulla, li metto da parte nello store
+2. superati i 10 mila punti processo lo store
+    1. ovvero associo i punti ai nodi, partendo dalla root e seguendo la condizione di poisson disk
+
+nel dettaglio 4.2.1
+inizialmente esiste solo il nodo root, che quindi è una foglia:
+inserisco i punti nello store e solo se supero la soglia di 20 mila punti creo i nodi figli
+e quindi inserirò i punti in maniera ordinata partendo dalla root e se il punto non viene associato alla root lo passo ai figli
+e ripeto 

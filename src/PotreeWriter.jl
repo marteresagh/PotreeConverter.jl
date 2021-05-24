@@ -80,7 +80,7 @@ end
 
 function waitUntilProcessed(potreeWriter::PotreeWriter)
 	if !isnothing(potreeWriter.storeThread)
-		wait(potreeWriter.storeThread)
+		fetch(potreeWriter.storeThread)
 	end
 end
 
@@ -107,23 +107,24 @@ function processStore(potreeWriter::PotreeWriter)
 
 	waitUntilProcessed(potreeWriter)
 
+	 for p in st
+		acceptedBy = add(potreeWriter.root, p, potreeWriter)
+		if !isnothing(acceptedBy)
+			update!(potreeWriter.tightAABB,p.position)
 
-	 potreeWriter.storeThread = Threads.@spawn for p in st
-			acceptedBy = add(potreeWriter.root, p, potreeWriter)
-			if !isnothing(acceptedBy)
-				update!(potreeWriter.tightAABB,p.position)
-
-				potreeWriter.pointsInMemory+=1
-				potreeWriter.numAccepted+=1
-			end
+			potreeWriter.pointsInMemory+=1
+			potreeWriter.numAccepted+=1
 		end
+	end
 
 end
 
 
 function flush(potreeWriter::PotreeWriter, cloudjs::CloudJS)
 	processStore(potreeWriter)
-	waitUntilProcessed(potreeWriter::PotreeWriter)
+
+	# waitUntilProcessed(potreeWriter::PotreeWriter)
+
 	flush(potreeWriter.root,potreeWriter)
 
 	# update and saves cloudjs
