@@ -1,6 +1,6 @@
 
 """
-create a header
+create a header of file las
 """
 function newHeader(aabb::pAABB; software = "potree-julia"::String, sizePointRecord = 26, npoints=0, scale=0.001)
 

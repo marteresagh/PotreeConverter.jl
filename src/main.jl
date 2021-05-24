@@ -1,3 +1,6 @@
+"""
+user input
+"""
 function main(sources,outdir,pageName)
 	spacing = 0
 	d = 0
