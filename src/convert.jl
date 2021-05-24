@@ -34,6 +34,11 @@ function writeSources(path::String, sourceFilenames::Vector{String}, numPoints::
     end
 end
 
+"""
+	potreeconvert(args::PotreeArguments)
+
+Main function.
+"""
 function potreeconvert(args::PotreeArguments)
  	start = time()
     pointsProcessed = 0

@@ -1,0 +1,23 @@
+language: julia
+os:
+  - osx
+julia:
+  - 1.6
+branches:
+  only:
+    - master
+notifications:
+  email: false
+
+coveralls: true
+
+jobs:
+  include:
+    - stage: "Documentation"
+      julia: 1.6
+      os: osx
+      script:
+        - julia --project=docs/ -e 'using Pkg; Pkg.add(PackageSpec(url="https://github.com/marteresagh/Common.jl")); Pkg.add(PackageSpec(url="https://github.com/marteresagh/FileManager.jl")); Pkg.instantiate();  Pkg.add(PackageSpec(path=pwd()))'
+        - julia --project=docs/ -e 'using Pkg; Pkg.add("Documenter")'
+        - julia --project=docs/ docs/make.jl
+      after_success: skip
