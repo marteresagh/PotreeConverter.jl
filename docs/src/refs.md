@@ -7,14 +7,14 @@ end
 ```
 
 ## Main Structures
-```@autodocs
+```@docs
 PotreeWriter
 PWNode
 ```
 
 ## Main references
 
-```@autodocs
+```@docs
 main
 potreeconvert
 add
