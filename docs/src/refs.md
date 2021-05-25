@@ -7,5 +7,7 @@ end
 ```
 
 ```@docs
+main
 potreeconvert
+add
 ```

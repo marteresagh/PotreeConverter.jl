@@ -6,6 +6,8 @@
 # 	return pAABB(min,max)
 # end
 
+"""
+"""
 function update!(aabb::pAABB,point::Vector{Float64})
 	x, y, z = point
 	aabb.min[1] = min(aabb.min[1],x)

@@ -1,3 +1,6 @@
+"""
+	PotreeWriter(workDir::String, aabb::pAABB, root::Union{Nothing,PWNode}, spacing::Float64, maxDepth::Int64, scale::Float64, quality::ConversionQuality )
+"""
 function PotreeWriter(workDir::String, aabb::pAABB, root::Union{Nothing,PWNode}, spacing::Float64, maxDepth::Int64, scale::Float64, quality::ConversionQuality )
 
     outputFormat = OutputFormat
@@ -41,7 +44,9 @@ function PotreeWriter(workDir::String, aabb::pAABB, root::Union{Nothing,PWNode},
 			nothing)
 end
 
-
+"""
+	PotreeWriter(workDir::String, quality::ConversionQuality)
+"""
 function PotreeWriter(workDir::String, quality::ConversionQuality )
 
     outputFormat = OutputFormat
@@ -84,7 +89,13 @@ function waitUntilProcessed(potreeWriter::PotreeWriter)
 	end
 end
 
+"""
+	add(potreeWriter::PotreeWriter,p::Point)
+
+Add point in PotreeWriter store.
+"""
 function add(potreeWriter::PotreeWriter,p::Point)
+	# la prima volta crea cartelle utili per il salvataggio dell'albero
 	if potreeWriter.numAdded == 0
 		dataDir = joinpath(potreeWriter.workDir,"data")
 		tempDir = joinpath(potreeWriter.workDir,"temp")
@@ -95,12 +106,17 @@ function add(potreeWriter::PotreeWriter,p::Point)
 
 	push!(potreeWriter.store,p)
 	potreeWriter.numAdded+=1
+	# se i punti sono tanti processo lo store
 	if length(potreeWriter.store) > 10_000
 		processStore(potreeWriter)
 	end
 end
 
+"""
+	processStore(potreeWriter::PotreeWriter)
 
+Move points from PotreeWriter store in the specific node of octree.
+"""
 function processStore(potreeWriter::PotreeWriter)
 	st = copy(potreeWriter.store)
 	potreeWriter.store = Point[]
@@ -119,7 +135,11 @@ function processStore(potreeWriter::PotreeWriter)
 
 end
 
+"""
+	flush(potreeWriter::PotreeWriter, cloudjs::CloudJS)
 
+Write to disk all nodes and entire hierarchy.
+"""
 function flush(potreeWriter::PotreeWriter, cloudjs::CloudJS)
 	processStore(potreeWriter)
 
@@ -192,7 +212,11 @@ function flush(potreeWriter::PotreeWriter, cloudjs::CloudJS)
 
 end
 
+"""
+	flush(potreeWriter::PotreeWriter, cloudjs::CloudJS)
 
+Write to disk all nodes and entire hierarchy.
+"""
 function loadStateFromDisk(potreeWriter::PotreeWriter)
 	# cloudjs
 	cloudJSPath = joinpath(potreeWriter.workDir, "cloud.js")

@@ -1,3 +1,8 @@
+"""
+	Point
+
+Point information.
+"""
 struct Point
 	position::Vector{Float64}
 	color::Vector{UInt16}
@@ -10,6 +15,11 @@ struct Point
 	gpsTime::Float64
 end
 
+"""
+	pAABB
+
+Axis Aligned Bounding Box.
+"""
 mutable struct pAABB
     min::Vector{Float64}
 	max::Vector{Float64}
@@ -20,6 +30,11 @@ mutable struct pAABB
 	pAABB(min::Vector{Float64},max::Vector{Float64}) = new(min,max,max-min)
 end
 
+"""
+	GridIndex
+
+Index definition of a cell in a sparse grid.
+"""
 struct GridIndex
 	i::Int
 	j::Int
@@ -29,6 +44,11 @@ struct GridIndex
 	GridIndex(i::Int,j::Int,k::Int) = new(i,j,k)
 end
 
+"""
+	GridCell
+
+Cell of sparse grid
+"""
 struct GridCell
     points::Vector{Vector{Float64}}
     neighbours::Vector{GridCell}
@@ -36,6 +56,11 @@ struct GridCell
 	GridCell() = new(Float64[],GridCell[])
 end
 
+"""
+	SparseGrid
+
+Sparse grid in a node.
+"""
 mutable struct SparseGrid
 	map::Dict{Int64,GridCell}
     width::Int
@@ -46,6 +71,11 @@ mutable struct SparseGrid
     numAccepted::UInt64
 end
 
+"""
+	PWNode
+
+SIngle node of potree.
+"""
 mutable struct PWNode
 	index::Int
 	aabb::pAABB
@@ -63,7 +93,11 @@ mutable struct PWNode
 	isInMemory::Bool
 end
 
+"""
+	PotreeWriter
 
+Metastructure of potree.
+"""
 mutable struct PotreeWriter
 	aabb::pAABB
 	tightAABB::pAABB
@@ -84,7 +118,11 @@ mutable struct PotreeWriter
 	storeThread::Union{Nothing,Task}
 end
 
+"""
+	PotreeArguments
 
+Initial parameters.
+"""
 mutable struct PotreeArguments
 	aabb::pAABB
 	sources::Vector{String}
@@ -107,7 +145,11 @@ mutable struct PotreeArguments
 	flushLimit::Int
 end
 
+"""
+	CloudJS
 
+Metadata for json file. 
+"""
 struct Node
 	name::String
 	pointCount::Int

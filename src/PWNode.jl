@@ -1,7 +1,13 @@
+"""
+	PWNode()
+"""
 function PWNode()
 	return nothing
 end
 
+"""
+	PWNode(potreeWriter::PotreeWriter,aabb::pAABB)
+"""
 function PWNode(potreeWriter::PotreeWriter,aabb::pAABB)
 	index = -1
 	acceptedAABB = pAABB()
@@ -32,6 +38,9 @@ function PWNode(potreeWriter::PotreeWriter,aabb::pAABB)
 				isInMemory)
 end
 
+"""
+	PWNode(potreeWriter::PotreeWriter, index::Int, aabb::pAABB, level::Int)
+"""
 function PWNode(potreeWriter::PotreeWriter, index::Int, aabb::pAABB, level::Int)
 	acceptedAABB = pAABB()
 	numAccepted = 0
@@ -60,6 +69,11 @@ function PWNode(potreeWriter::PotreeWriter, index::Int, aabb::pAABB, level::Int)
 				isInMemory)
 end
 
+"""
+	name(node::PWNode)::String
+
+Return name of node.
+"""
 function name(node::PWNode)::String
 	if isnothing(node.parent)
 		return "r"
@@ -68,6 +82,11 @@ function name(node::PWNode)::String
 	end
 end
 
+"""
+	hierarchyPath(node::PWNode,potreeWriter::PotreeWriter)::String
+
+Return path of node folder.
+"""
 function hierarchyPath(node::PWNode,potreeWriter::PotreeWriter)::String
 	path = "r/"
 	hierarchyStepSize = potreeWriter.hierarchyStepSize
@@ -81,11 +100,21 @@ function hierarchyPath(node::PWNode,potreeWriter::PotreeWriter)::String
 	return path
 end
 
+"""
+	hierarchyPath(node::PWNode,potreeWriter::PotreeWriter)::String
+
+Return node filename.
+"""
 function path(node::PWNode,potreeWriter::PotreeWriter)::String
 	path = hierarchyPath(node,potreeWriter)*name(node)*".las"
 	return path
 end
 
+"""
+	isLeafNode(node::PWNode)::Bool
+
+Check if a node is a leaf of octree.
+"""
 function isLeafNode(node::PWNode)::Bool
 	return isempty(node.children)
 end
@@ -118,33 +147,41 @@ function loadFromDisk(node::PWNode, potreeWriter::PotreeWriter)
 	node.isInMemory = true;
 end
 
+"""
+	add(node::PWNode, point::Point, potreeWriter::PotreeWriter)::Union{Nothing,PWNode}
 
+Add point in node if it is possible.
+"""
 function add(node::PWNode, point::Point, potreeWriter::PotreeWriter)::Union{Nothing,PWNode}
 	node.addCalledSinceLastFlush = true;
+
+	# se il nodo non è in memoria lo leggo dal disco
 	if !node.isInMemory
 		loadFromDisk(node,potreeWriter)
 	end
 
+	# se il nodo è foglia inserisco i punti nello store senza controllo
 	if isLeafNode(node)
 		push!(node.store,point)
-		if length(node.store) >= potreeWriter.storeSize
-			split(node,potreeWriter)
+		if length(node.store) >= potreeWriter.storeSize # se i punti superano una certa soglia
+			split(node,potreeWriter) # divido il nodo e genero i figli
 		end
 		return node
-	else
+	else # se il nodo è interno
 		accepted = false
-		accepted = add(node.grid, point.position)
-		if accepted
+		accepted = add(node.grid, point.position) # aggiungo il punto alla griglia
+		if accepted  # se accettato aggiungo il punto al nodo
 			push!(node.cache, point)
 			update!(node.acceptedAABB, point.position)
 			node.numAccepted+=1
 
 			return node
-		else
+		else # se non è stato accettato e l'albero non ho raggiunto la profondità massima
 			if potreeWriter.maxDepth != -1 && node.level >= potreeWriter.maxDepth
 				return nothing
 			end
 
+			# passo il punto ad uno dei suoi figli
 			childIndex = nodeIndex(node.aabb, point.position)
 			if childIndex >= 0
 				if isLeafNode(node)
@@ -164,6 +201,11 @@ function add(node::PWNode, point::Point, potreeWriter::PotreeWriter)::Union{Noth
 	end
 end
 
+"""
+	createChild(node::PWNode, childIndex::Int, potreeWriter::PotreeWriter)::PWNode
+
+Create child of node and fix parenthood.
+"""
 function createChild(node::PWNode, childIndex::Int, potreeWriter::PotreeWriter)::PWNode
 	cAABB = childAABB(node.aabb, childIndex)
 	child = PWNode(potreeWriter, childIndex, cAABB, node.level+1)
@@ -173,6 +215,11 @@ function createChild(node::PWNode, childIndex::Int, potreeWriter::PotreeWriter):
 	return child
 end
 
+"""
+	split(node::PWNode, potreeWriter::PotreeWriter)
+
+Split node.
+"""
 function split(node::PWNode, potreeWriter::PotreeWriter)
 	node.children = Vector{Union{Nothing,PWNode}}(nothing,8)
 	filepath = joinpath(potreeWriter.workDir, "data", path(node,potreeWriter))
@@ -188,7 +235,11 @@ function split(node::PWNode, potreeWriter::PotreeWriter)
 	node.store = Point[];
 end
 
+"""
+	flush(node::PWNode, potreeWriter::PotreeWriter)
 
+Write to disk the node.
+"""
 function flush(node::PWNode, potreeWriter::PotreeWriter)
 
 	function writeToDisk(points::Vector{Point}, append::Bool)
@@ -292,6 +343,7 @@ function flush(node::PWNode, potreeWriter::PotreeWriter)
 	end
 
 end
+
 
 # void traverse(std::function<void(PWNode*)> callback);
 function traverse(this_node::PWNode, callback::Function)

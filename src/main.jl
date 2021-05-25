@@ -1,7 +1,17 @@
 """
-user input
+	main(sources,outdir,pageName)
+
+Interface.
+
+Input:
+ - `sources`: list of files to convert
+ - `outdir`: output folder
+ - `pageName`: project name
+
+Output:
+ - Potree structure saved in `outdir`: a single file .las for each node.
 """
-function main(sources,outdir,pageName)
+function main(sources::Vector{String},outdir::String,pageName::String)
 	spacing = 0
 	d = 0
 	levels = -1

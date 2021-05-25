@@ -1,3 +1,8 @@
+"""
+	writeSources(path::String, sourceFilenames::Vector{String}, numPoints::Vector{Int64}, boundingBoxes::Vector{pAABB})
+
+Write a json file with sources information.
+"""
 function writeSources(path::String, sourceFilenames::Vector{String}, numPoints::Vector{Int64}, boundingBoxes::Vector{pAABB})
 	data = DataStructures.OrderedDict()
 	data["bounds"] = DataStructures.OrderedDict()
@@ -37,13 +42,17 @@ end
 """
 	potreeconvert(args::PotreeArguments)
 
-Main function.
+Generates an octree LOD structure:
+ - 1. Read all points in sources.
+ - 2. Add each point to a one node of octree.
+ - 3. Write all info and structures to the disk.
 """
 function potreeconvert(args::PotreeArguments)
  	start = time()
     pointsProcessed = 0
 	# writer = nothing
 
+	# Compute AABB
 	if isempty(args.aabbValues)
 		args.aabb = calculateAABB(args.sources)
 	else
@@ -57,11 +66,13 @@ function potreeconvert(args::PotreeArguments)
     println("cubic AABB: ")
     println(args.aabb)
 
+	# Compute spacing in r
     if args.diagonalFraction != 0
 		args.spacing = Common.norm(args.aabb.size) / args.diagonalFraction
 		println("spacing calculated from diagonal: $(args.spacing)")
 	end
 
+	# Instantiate writer
 	workdir = FileManager.mkdir_project(args.workDir, args.pageName)
 	if isfile(joinpath(workdir,"cloud.js"))
 		if args.storeOption == ABORT_IF_EXISTS
@@ -91,7 +102,7 @@ function potreeconvert(args::PotreeArguments)
 		writer = PotreeWriter(workdir, args.aabb, PWNode(), args.spacing, args.maxDepth, args.scale, args.quality)
 		root = PWNode(writer,args.aabb)
 		writer.root = root
-		cloudjs = CloudJS()
+		cloudjs = CloudJS() # cloud.js - json of metadata
 		update!(cloudjs, writer)
 	end
 
@@ -101,12 +112,11 @@ function potreeconvert(args::PotreeArguments)
 	numPoints = Int64[]
 	sourceFilenames = String[]
 
-	for source in args.sources
+
+	for source in args.sources # Read all sources
 		println("READING: $(source)")
-		# reader of LAS file
 		header, pointdata = FileManager.LasIO.FileIO.load(source)
 		# open(source) do s
-
 		# FileManager.LasIO.skiplasf(s)
 		# header = FileManager.LasIO.read(s, FileManager.LasIO.LasHeader)
 		# n = header.records_count
@@ -116,11 +126,10 @@ function potreeconvert(args::PotreeArguments)
 		push!(numPoints,convert(Int,header.records_count));
 		push!(sourceFilenames,source)
 		# writeSources(writer.workDir, sourceFilenames, numPoints, boundingBoxes)
-		println("####### ")
 
+		# for each point in source
 		for p in pointdata
 			pointsProcessed += 1
-
 			point = Point(p, header)
 			add(writer, point)
 			if pointsProcessed % 1_000_000  == 0
@@ -142,9 +151,8 @@ function potreeconvert(args::PotreeArguments)
 			end
 		end
 
+	end # all sources read
 
-	end
-	# close file las
 	flush(writer, cloudjs)
 	println("closing writer")
 
