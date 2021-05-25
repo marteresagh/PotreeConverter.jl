@@ -43,9 +43,9 @@ end
 	potreeconvert(args::PotreeArguments)
 
 Generates an octree LOD structure:
- - 1. Read all points in sources.
- - 2. Add each point to a one node of octree.
- - 3. Write all info and structures to the disk.
+ - Read all points in sources.
+ - Add each point to a one node of octree.
+ - Write all info and structures to the disk.
 """
 function potreeconvert(args::PotreeArguments)
  	start = time()

@@ -1,8 +1,9 @@
 # PotreeConverter
 
 `PotreeConverter.jl` is a [Julia](http://julialang.org) version of [PotreeConverter1.7](https://github.com/potree/PotreeConverter/tree/c981602744a11c91e8bc1de55bc21be5af0f14b8)
+A Potree is a data structure, used to store huge point clouds, based on octree. All details of this structure are described by Markus Schütz in his [thesis](https://www.cg.tuwien.ac.at/research/publications/2016/SCHUETZ-2016-POT/SCHUETZ-2016-POT-thesis.pdf).
 
-![potree](./images/potreeconverter.jpg)
+![potree](./images/potreeconverter.png)
 > 2D simplification of the PotreeConverter steps to create a 3 levels multi-resolution octree.
 
 ## Build-up

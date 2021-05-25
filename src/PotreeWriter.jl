@@ -92,7 +92,7 @@ end
 """
 	add(potreeWriter::PotreeWriter,p::Point)
 
-Add point in PotreeWriter store.
+Add point in PotreeWriter store and process store.  
 """
 function add(potreeWriter::PotreeWriter,p::Point)
 	# la prima volta crea cartelle utili per il salvataggio dell'albero
