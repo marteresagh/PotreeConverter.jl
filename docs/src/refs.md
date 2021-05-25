@@ -1,26 +1,18 @@
 # References
-
-```@index
-Order = [:type, :function]
-Pages   = ["refs.md"]
-```
-
-## Structure
-
-```@autodocs
-Modules = [PotreeConverter]
-Pages   = ["struct.jl"]
-Private = false
-```
-
-
-## Main references
 ```@meta
 CurrentModule = PotreeConverter
 DocTestSetup = quote
-    using PotreeConverter
+using PotreeConverter
 end
 ```
+
+## Main Structures
+```@autodocs
+PotreeWriter
+PWNode
+```
+
+## Main references
 
 ```@autodocs
 main
