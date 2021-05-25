@@ -4,7 +4,7 @@
 Interface.
 
 Input:
- - `sources`: list of files to convert
+ - `sources`: list of point clouds (file .las) to convert
  - `outdir`: output folder
  - `pageName`: project name
 
