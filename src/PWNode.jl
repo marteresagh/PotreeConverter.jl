@@ -390,7 +390,7 @@ function findNode(node::PWNode, ref_name::String)
 	elseif length(ref_name) > length(thisName)
 		childIndex = parse(Int,ref_name[length(thisName)+1])
 		if !isLeafNode(node) && !isnothing(node.children[childIndex+1])
-			return findNode(node.children[childIndex],ref_name);
+			return findNode(node.children[childIndex+1],ref_name);
 		else
 			return nothing
 		end

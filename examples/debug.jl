@@ -1,4 +1,4 @@
-using FileManager
+using PotreeConverter
 
-testfile = raw"D:\pointclouds\cava.las"
-header, pointdata = FileManager.LasIO.FileIO.load(testfile)
+potree = raw"C:\Users\marte\Documents\Julia_package\UTILS\MURI"
+writer = upgrade_potree(potree)
