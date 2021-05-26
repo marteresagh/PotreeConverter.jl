@@ -242,7 +242,9 @@ end
 """
 	flush(node::PWNode, potreeWriter::PotreeWriter)
 
-Write to disk the node.
+Write to disk the subtree that has `node` as root.
+Properties:
+ - create a file .las for each node.
 """
 function flush(node::PWNode, potreeWriter::PotreeWriter)
 
