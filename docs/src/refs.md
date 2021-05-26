@@ -2,7 +2,7 @@
 ```@meta
 CurrentModule = PotreeConverter
 DocTestSetup = quote
-using PotreeConverter
+    using PotreeConverter
 end
 ```
 

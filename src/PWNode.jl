@@ -150,7 +150,11 @@ end
 """
 	add(node::PWNode, point::Point, potreeWriter::PotreeWriter)::Union{Nothing,PWNode}
 
-Add point in node if it is possible.
+Associates the `point` to one node of the subtree that has `node` as root.
+Properties:
+ - the leaf node expands iff the size of store is greater than a chosen threshold.
+ - the internal node accepts points that satisfy requirement.
+ - the point not accepted by this `node` passes to one of its children
 """
 function add(node::PWNode, point::Point, potreeWriter::PotreeWriter)::Union{Nothing,PWNode}
 	node.addCalledSinceLastFlush = true;
