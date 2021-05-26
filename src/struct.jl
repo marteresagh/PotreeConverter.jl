@@ -36,6 +36,8 @@ end
 """
 	pAABB
 
+Axis Aligned Bounding Box
+
 # Constructors
 ```jldoctest
 pAABB()
