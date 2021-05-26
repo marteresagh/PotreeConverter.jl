@@ -151,6 +151,7 @@ end
 	add(node::PWNode, point::Point, potreeWriter::PotreeWriter)::Union{Nothing,PWNode}
 
 Associates the `point` to one node of the subtree that has `node` as root.
+
 Properties:
  - the leaf node expands iff the size of store is greater than a chosen threshold.
  - the internal node accepts points that satisfy requirement.
@@ -243,6 +244,7 @@ end
 	flush(node::PWNode, potreeWriter::PotreeWriter)
 
 Write to disk the subtree that has `node` as root.
+
 Properties:
  - create a file .las for each node.
 """

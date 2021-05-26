@@ -19,4 +19,5 @@ main
 potreeconvert
 add
 processStore
+[`flush(node::PWNode, potreeWriter::PotreeWriter)`](@ref)
 ```

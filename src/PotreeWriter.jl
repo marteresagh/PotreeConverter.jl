@@ -139,6 +139,7 @@ end
 	flush(potreeWriter::PotreeWriter, cloudjs::CloudJS)
 
 Write to disk all nodes and entire hierarchy.
+
 Properties:
  - flush all nodes of octree
  - save the metadata of the octree in cloud.js

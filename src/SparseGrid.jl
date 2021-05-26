@@ -19,6 +19,7 @@ end
 	add(sparseGrid::SparseGrid,p::Vector{Float64})::Bool
 
 Add point `p` in sparse grid.
+
 Properties:
  - compute the index of the cell where `p` falls
  - check the distance between `p` and other points in same cell and in nearest cells
