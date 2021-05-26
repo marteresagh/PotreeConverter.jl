@@ -139,6 +139,10 @@ end
 	flush(potreeWriter::PotreeWriter, cloudjs::CloudJS)
 
 Write to disk all nodes and entire hierarchy.
+Properties:
+ - flush all nodes of octree
+ - save the metadata of the octree in cloud.js
+ - write the hierarchy in a file .hrc
 """
 function flush(potreeWriter::PotreeWriter, cloudjs::CloudJS)
 	processStore(potreeWriter)
@@ -212,11 +216,7 @@ function flush(potreeWriter::PotreeWriter, cloudjs::CloudJS)
 
 end
 
-"""
-	flush(potreeWriter::PotreeWriter, cloudjs::CloudJS)
 
-Write to disk all nodes and entire hierarchy.
-"""
 function loadStateFromDisk(potreeWriter::PotreeWriter)
 	# cloudjs
 	cloudJSPath = joinpath(potreeWriter.workDir, "cloud.js")
