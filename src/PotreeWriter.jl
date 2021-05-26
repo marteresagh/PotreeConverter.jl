@@ -92,7 +92,7 @@ end
 """
 	add(potreeWriter::PotreeWriter,p::Point)
 
-Add point in PotreeWriter store and process store.  
+Add point in PotreeWriter store and process store.
 """
 function add(potreeWriter::PotreeWriter,p::Point)
 	# la prima volta crea cartelle utili per il salvataggio dell'albero
@@ -115,7 +115,7 @@ end
 """
 	processStore(potreeWriter::PotreeWriter)
 
-Move points from PotreeWriter store in the specific node of octree.
+Move points from PotreeWriter store in a specific node of octree.
 """
 function processStore(potreeWriter::PotreeWriter)
 	st = copy(potreeWriter.store)

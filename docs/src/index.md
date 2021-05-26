@@ -15,6 +15,8 @@ A Potree is a data structure, used to store huge point clouds, based on octree. 
 
  - For each unprocessed leaf node, which has reached a certain number of points, a subset *M* of points is extracted such that it satisfies the condition of Poisson Disk.
 
+ - To extract subset *M* the algorithm makes use of a sparse grid. 
+
  - The remaining points are stored in a temporary array.
 
  - The leaf node expands iff the size of the array is greater than a chosen threshold.

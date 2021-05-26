@@ -15,6 +15,11 @@ function SparseGrid(aabb::pAABB, spacing::Float64)
 				)
 end
 
+"""
+	add(sparseGrid::SparseGrid,p::Vector{Float64})::Bool
+
+Add point `p` in sparse grid.
+"""
 function add(sparseGrid::SparseGrid,p::Vector{Float64})::Bool
 
 	aabb = sparseGrid.aabb
