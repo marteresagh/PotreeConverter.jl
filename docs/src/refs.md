@@ -8,8 +8,11 @@ end
 
 ## Main Structures
 ```@docs
+Point
+pAABB
 PotreeWriter
 PWNode
+SparseGrid
 ```
 
 ## Main references
