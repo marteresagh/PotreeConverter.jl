@@ -19,12 +19,8 @@ function split_leaf(potreeWriter::PotreeConverter.PotreeWriter)
             if !node.isInMemory
                 PotreeConverter.loadFromDisk(node,potreeWriter)
             end
-            @show node.isInMemory
-            if isempty(node.store)
-                @show "vuoto"
-            else
-                @show "pieno"
-            end
+
+
         end
     end
     return split_leaf0

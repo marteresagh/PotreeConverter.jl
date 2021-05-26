@@ -17,5 +17,6 @@ PWNode
 ```@docs
 main
 potreeconvert
-add
+add(node::PWNode, point::Point, potreeWriter::PotreeWriter)::Union{Nothing,PWNode}
+processStore
 ```
