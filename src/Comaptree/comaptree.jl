@@ -46,3 +46,74 @@ function potree2comaptree(potreeDir::String)
 
 	return ComaptreeWriter(root)
 end
+
+
+### function elabora ogni nodo in postorder
+"""
+	processTree(writer::PotreeWriter, comaptree::ComaptreeWriter)
+
+Elaborate each comaptree node in postorder.
+"""
+function processTree(writer::PotreeWriter, comaptree::ComaptreeWriter)
+
+	function elaborateNode(writer::PotreeWriter)
+		function elaborateNode0(node::CWNode)
+			ref_name = name(node)
+			node_potree = findNode(writer.root, ref_name)
+
+			if isLeafNode(node_potree)
+				@assert isLeafNode(node_potree) == isLeafNode(node) "comaptree not isomorphic to potree"
+				println("leaf node: $ref_name")
+				if !node_potree.isInMemory
+					PotreeConverter.loadFromDisk(node_potree,writer)
+				end
+
+				identification(node,node_potree)
+
+				node_potree.store = Point[]
+				node_potree.isInMemory = false
+			else
+				@assert isInnerNode(node_potree) == isInnerNode(node) "comaptree not isomorphic to potree"
+				println("internal node: $ref_name")
+				unification(node)
+			end
+
+		end
+		return elaborateNode0
+	end
+
+	postorder(comaptree.root, elaborateNode(writer))
+end
+
+"""
+	identification(node::CWNode,node_potree::PWNode)
+
+Get cluster of coplanar planes.
+"""
+function identification(node::CWNode,node_potree::PWNode)
+	println("identification")
+	# TODO DETECTION hyperplanes
+	# points_pos = map(s->s.position,node_potree.store)
+	# points = hcat(points_pos...)
+	# direction = nothing
+	# centroid = nothing
+	# if size(points,2) > 10
+	# 	direction, centroid = Common.LinearFit(points)
+	# 	node.dict[direction] = [c[:] for c in eachcol(points)]
+	# end
+end
+
+"""
+	unification(node::CWNode)
+
+Unification.
+"""
+function unification(node::CWNode)
+	println("unification")
+	# TODO merge covectors
+	# for child in node.children
+	# 	if !isnothing(child)
+	# 		merge!(node.dict,child.dict)
+	# 	end
+	# end
+end

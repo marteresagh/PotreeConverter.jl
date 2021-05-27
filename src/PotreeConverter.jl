@@ -3,6 +3,8 @@ module PotreeConverter
     using Common
     using FileManager
     using Printf
+    using Detection
+    
     macro format(ex)
        quote
            Base.show(io::IO, x::Float64) = write(io, @sprintf($ex, x))

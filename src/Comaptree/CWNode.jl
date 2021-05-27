@@ -26,6 +26,11 @@ function isLeafNode(node::CWNode)::Bool
 	return isempty(node.children)
 end
 
+function isInnerNode(node::CWNode)::Bool
+	return length(node.children) > 0
+end
+
+
 function findNode(node::CWNode, ref_name::String)
 	thisName = name(node)
 

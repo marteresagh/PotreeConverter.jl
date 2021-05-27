@@ -39,4 +39,5 @@ CWNode
 ```@docs
 potree2comaptree(potreeDir::String)
 postorder
+processTree
 ```
