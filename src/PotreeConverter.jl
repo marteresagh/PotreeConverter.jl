@@ -33,6 +33,7 @@ module PotreeConverter
 
     const cellSizeFactor = 5.0
 
+    # POTREE CONVERTER
     include("struct.jl")
     include("stuff.jl")
     include("PotreeWriter.jl")
@@ -46,5 +47,11 @@ module PotreeConverter
     include("cloudjs.jl")
     include("convert.jl")
     include("main.jl")
+
+    # COMAPTREE
+    include("Comaptree/struct.jl")
+    include("Comaptree/expand.jl")
+    include("Comaptree/CWNode.jl")
+    include("Comaptree/comaptree.jl")
 
 end # module
