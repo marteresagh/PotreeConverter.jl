@@ -46,19 +46,3 @@ function potree2comaptree(potreeDir::String)
 
 	return ComaptreeWriter(root)
 end
-
-"""
-	postorder(root::PotreeConverter.CWNode, callback::Function)
-
-
-"""
-function postorder(root::PotreeConverter.CWNode, callback::Function)
-	 if !isempty(root.children)
-		 for child in root.children
-			 if !isnothing(child)
-			 	postorder(child, callback)
-			end
-		 end
-	 end
-	 callback(root)
-end

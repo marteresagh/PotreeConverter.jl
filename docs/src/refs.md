@@ -6,7 +6,8 @@ DocTestSetup = quote
 end
 ```
 
-## Main Structures
+## PotreeConverter
+### Main Structures
 ```@docs
 Point
 pAABB
@@ -15,7 +16,7 @@ PWNode
 SparseGrid
 ```
 
-## Main references
+### Main references
 
 ```@docs
 main
@@ -23,4 +24,19 @@ potreeconvert
 add
 processStore
 flush
+```
+
+
+## Comaptree  
+### Main Structures
+```@docs
+ComaptreeWriter
+CWNode
+```
+
+### Main references
+
+```@docs
+potree2comaptree(potreeDir::String)
+postorder
 ```

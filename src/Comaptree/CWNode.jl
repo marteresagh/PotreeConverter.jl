@@ -42,3 +42,29 @@ function findNode(node::CWNode, ref_name::String)
 		return nothing
 	end
 end
+
+function traverse(this_node::PotreeConverter.CWNode, callback::Function)
+	callback(this_node)
+	for child in this_node.children
+		if !isnothing(child)
+			traverse(child, callback)
+		end
+	end
+end
+
+
+"""
+	postorder(root::PotreeConverter.CWNode, callback::Function)
+
+If the `node` is not a leaf, then postorder traverse all children of `node`, else elaborate the `node` dataset.
+"""
+function postorder(node::PotreeConverter.CWNode, callback::Function)
+	 if !isempty(node.children)
+		 for child in node.children
+			 if !isnothing(child)
+			 	postorder(child, callback)
+			end
+		 end
+	 end
+	 callback(node)
+end
