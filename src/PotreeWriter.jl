@@ -250,6 +250,7 @@ function loadStateFromDisk(potreeWriter::PotreeWriter)
 	potreeWriter.spacing = cloudjs.spacing
 	potreeWriter.scale = cloudjs.scale
 	potreeWriter.aabb = cloudjs.boundingBox
+	potreeWriter.tightAABB = cloudjs.tightBoundingBox
 	potreeWriter.numAccepted = cloudjs.numAccepted
 	# end potreeWriter
 
