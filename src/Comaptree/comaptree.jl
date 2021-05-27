@@ -93,6 +93,37 @@ Get cluster of coplanar planes.
 function identification(node::CWNode,node_potree::PWNode)
 	println("identification")
 	# TODO DETECTION hyperplanes
+
+	points_pos = map(s->s.position,node_potree.store)
+	points = hcat(points_pos...)
+	points_rgb = map(s->s.color,node_potree.store)
+	rgb = hcat(points_rgb...)
+	hyperplanes = Detection.Hyperplane[]
+	if size(points,2) >= 3
+		direction, centroid = Common.LinearFit(points)
+		residuals = Common.distance_point2plane(centroid, direction).([c[:] for c in eachcol(points)])
+		coplanar = max(residuals...) < 0.2
+		if !coplanar
+			##### Alphashapes or
+
+			##### DETECTION
+			INPUT_PC = Common.PointCloud(points,rgb)
+			par = 0.04
+			failed = 10
+			N = 5
+			k = 10
+			threshold = Detection.Features.estimate_threshold(INPUT_PC,2*k)
+			INPUT_PC.normals = Detection.Features.compute_normals(INPUT_PC.coordinates,threshold,k)
+			params = Detection.Initializer(INPUT_PC, par, threshold, failed, N, k, Int64[])
+			hyperplanes = Detection.iterate_detection(params; debug = true)
+		else
+			hyperplanes = [Detection.Hyperplane(PointCloud(points),direction,centroid)]
+		end
+	end
+	println("$(length(hyperplanes)) planes found")
+	for hyperplane in hyperplanes
+		node.dict[[hyperplane.direction...,-Common.dot(hyperplane.direction,hyperplane.centroid)]] = [c[:] for c in eachcol(hyperplane.inliers.coordinates)]
+	end
 	# points_pos = map(s->s.position,node_potree.store)
 	# points = hcat(points_pos...)
 	# direction = nothing
@@ -111,9 +142,9 @@ Unification.
 function unification(node::CWNode)
 	println("unification")
 	# TODO merge covectors
-	# for child in node.children
-	# 	if !isnothing(child)
-	# 		merge!(node.dict,child.dict)
-	# 	end
-	# end
+	for child in node.children
+		if !isnothing(child)
+			merge!(node.dict,child.dict)
+		end
+	end
 end

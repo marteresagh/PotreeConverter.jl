@@ -19,7 +19,7 @@ end
 """
     split_leaf(potreeWriter::PotreeConverter.PotreeWriter)
 
-Split leaf of Potree.
+Split leaf of potree.
 """
 function split_leaf(potreeWriter::PotreeConverter.PotreeWriter)
     function split_leaf0(node::PotreeConverter.PWNode)
@@ -30,13 +30,27 @@ function split_leaf(potreeWriter::PotreeConverter.PotreeWriter)
             points_pos = map(s->s.position,node.store)
             points = hcat(points_pos...)
 
-            #test for further split
-            if size(points,2) > 10
+            if size(points,2) >= 3
                 direction, centroid = Common.LinearFit(points)
                 residuals = Common.distance_point2plane(centroid, direction).([c[:] for c in eachcol(points)])
-                test = max(residuals...) > 0.2
-                if test
-                    PotreeConverter.split(node, potreeWriter)
+                coplanar = max(residuals...) < 0.2
+                if !coplanar
+                    INPUT_PC = Common.PointCloud(points)
+                    par = 0.04
+                    failed = 10
+                    N = 5
+                    k = 30
+                    threshold = Detection.Features.estimate_threshold(INPUT_PC,2*k)
+                    INPUT_PC.normals = Detection.Features.compute_normals(INPUT_PC.coordinates,threshold,k)
+                    params = Detection.Initializer(INPUT_PC, par, threshold, failed, N, k, Int64[])
+
+                    hyperplanes = Detection.iterate_detection(params; debug = true)
+                    println("$(length(hyperplanes)) planes found")
+                    test = length(hyperplanes)>10
+                    if test
+                        println("split")
+                        PotreeConverter.split(node, potreeWriter)
+                    end
                 end
             end
 
