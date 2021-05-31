@@ -17,7 +17,7 @@ jobs:
       julia: 1.6
       os: osx
       script:
-        - julia --project=docs/ -e 'using Pkg; Pkg.add(PackageSpec(url="https://github.com/marteresagh/Common.jl")); Pkg.add(PackageSpec(url="https://github.com/marteresagh/FileManager.jl")); Pkg.add(PackageSpec(url="https://github.com/marteresagh/Search.jl")); Pkg.add(PackageSpec(url="https://github.com/marteresagh/Features.jl")); Pkg.instantiate();  Pkg.add(url="https://github.com/marteresagh/PotreeConverter.jl")'
+        - julia --project=docs/ -e 'using Pkg; Pkg.add(PackageSpec(url="https://github.com/marteresagh/Common.jl")); Pkg.add(PackageSpec(url="https://github.com/marteresagh/FileManager.jl")); Pkg.add(PackageSpec(url="https://github.com/marteresagh/Search.jl")); Pkg.add(PackageSpec(url="https://github.com/marteresagh/Features.jl")); Pkg.add(PackageSpec(url="https://github.com/marteresagh/Detection.jl")); Pkg.instantiate();  Pkg.add(url="https://github.com/marteresagh/PotreeConverter.jl")'
         - julia --project=docs/ -e 'using Pkg; Pkg.add("Documenter")'
         - julia --project=docs/ docs/make.jl
       after_success: skip
