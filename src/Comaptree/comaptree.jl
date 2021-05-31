@@ -92,7 +92,6 @@ Get cluster of coplanar planes.
 """
 function identification(node::CWNode,node_potree::PWNode)
 	println("identification")
-	# TODO DETECTION hyperplanes
 
 	points_pos = map(s->s.position,node_potree.store)
 	points = hcat(points_pos...)
