@@ -4,7 +4,10 @@ module PotreeConverter
     using FileManager
     using Printf
     using Detection
-    
+    using Detection.Search.NearestNeighbors
+    using FileManager.LasIO
+    using LasIO.FileIO
+
     macro format(ex)
        quote
            Base.show(io::IO, x::Float64) = write(io, @sprintf($ex, x))
@@ -55,5 +58,6 @@ module PotreeConverter
     include("Comaptree/expand.jl")
     include("Comaptree/CWNode.jl")
     include("Comaptree/comaptree.jl")
+    include("Comaptree/util.jl")
 
 end # module

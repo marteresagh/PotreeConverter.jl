@@ -1,4 +1,3 @@
-
 """
 create a header of file las
 """
@@ -127,6 +126,7 @@ function newPointRecord(point::Array{Float64,1},
 
 end
 
+
 function read(fname::String)
 	if endswith(fname,".las")
 		header, laspoints = FileManager.LasIO.FileIO.load(fname)
@@ -136,9 +136,83 @@ function read(fname::String)
 	return header,laspoints
 end
 
-function las2aabb(file::String)::pAABB
-	header, p = read(file)
+"""
+	las2aabb(file::String) -> AABB
 
+Return LAS file's bounding box.
+"""
+function las2aabb(file::String)::pAABB
+	header = nothing
+	open(file,"r") do s
+	  LasIO.skiplasf(s)
+	  header = read(s, LasHeader)
+	end
+	#header = LasIO.read(fname, LasIO.LasHeader)
 	aabb = LasIO.boundingbox(header)
 	return pAABB([aabb.xmin, aabb.ymin, aabb.zmin], [aabb.xmax, aabb.ymax, aabb.zmax])
 end
+
+##################################################
+# using PyCall
+# function las2aabb(file::String)::AABB
+# 	py"""
+# 	import pylas
+#
+# 	def ReadHeader(file):
+# 		with pylas.open(file) as f:
+# 			return f.header.x_min,f.header.y_min,f.header.z_min,f.header.x_max,f.header.y_max,f.header.z_max
+# 	"""
+#
+# 	aabb = py"ReadHeader"(file)
+#
+# 	return pAABB(aabb[1:3], aabb[4:6])
+# end
+
+#
+# function read(fname::String)
+# 	py"""
+# 	import pylas
+# 	import numpy as np
+#
+# 	def ReadLas(file):
+# 		las = pylas.read(file)
+# 		return las
+#
+# 	"""
+# 	las = py"ReadLas"(file)
+# 	return las.header,las.points_data
+# end
+#
+# """
+# create a header of file las
+# """
+# function newHeader(aabb::pAABB; software = "potree-julia"::String, id_format = 2, npoints=0, scale=0.001)
+#
+# 	py"""
+# 	import pylas
+#
+# 	def createHeader(x_max,x_min,y_max,y_min,z_max,z_min,software,id_format,scale):
+# 		return LasHeader(version=Version(1, 2),
+# 						generating_software = software,
+# 		 				point_format=PointFormat(id_format),
+# 						x_scale = scale,
+# 						y_scale = scale,
+# 						z_scale = scale,
+# 						x_offset = x_min,
+# 						y_offset = y_min,
+# 						z_offset = z_min,
+# 						x_min = x_min,
+# 						y_min = y_min,
+# 						z_min = z_min,
+# 						x_max = x_max,
+# 						y_max = y_max,
+# 						z_max = z_max,)
+# 	"""
+# 	x_max = aabb.max[1]
+# 	x_min = aabb.min[1]
+# 	y_max = aabb.max[2]
+# 	y_min = aabb.min[2]
+# 	z_max = aabb.max[3]
+# 	z_min = aabb.min[3]
+# 	return py"createHeader"(x_max,x_min,y_max,y_min,z_max,z_min,software,id_format,scale)
+# end

@@ -115,7 +115,7 @@ function potreeconvert(args::PotreeArguments)
 
 	for source in args.sources # Read all sources
 		println("READING: $(source)")
-		header, pointdata = FileManager.LasIO.FileIO.load(source)
+		header, pointdata = load(source,mmap=true)
 		# open(source) do s
 		# FileManager.LasIO.skiplasf(s)
 		# header = FileManager.LasIO.read(s, FileManager.LasIO.LasHeader)

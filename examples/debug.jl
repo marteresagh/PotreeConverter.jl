@@ -41,59 +41,82 @@ using Visualization
 # printname(node::PotreeConverter.CWNode) = println(PotreeConverter.name(node))
 #################################################
 
-potree = raw"C:\Users\marte\Documents\Julia_package\UTILS\potreeoriginale\MURI"
+# potree = raw"C:\Users\marte\Documents\Julia_package\UTILS\potreeoriginale\MURI"
 potree = raw"C:\Users\marte\Documents\potreeDirectory\pointclouds\MURI"
+leaves = FileManager.get_leaf(potree2trie(potree))
+INPUT_PC = FileManager.source2pc(potree,0)
+cloudmetadata = CloudMetadata(potree)
 # PotreeConverter.expand(potree, PotreeConverter.split_leaf)
-
+aabb = cloudmetadata.boundingBox
+centroid = Common.centroid(getmodel(aabb)[1])
 cmtree = PotreeConverter.potree2comaptree(potree)
 writer = PotreeConverter.PotreeWriter(potree, PotreeConverter.DEFAULT)
 cloudjs = PotreeConverter.loadStateFromDisk(writer)
 
 PotreeConverter.processTree(writer, cmtree)
 
-node = PotreeConverter.findNode(cmtree.root,"r6")
+node = PotreeConverter.findNode(cmtree.root,"r240")
 cmtree.root.dict
+# #
+# hyperplanes = Detection.Hyperplane[]
+# INPUT_PC = FileManager.source2pc(raw"C:\Users\marte\Documents\potreeDirectory\pointclouds\MURI\data\r\r0464.las") #r0464 r0465
+# par = 0.04
+# failed = 10
+# N = 1000
+# k = 10
+# threshold = Detection.Features.estimate_threshold(INPUT_PC,2*k)
+# INPUT_PC.normals = Detection.Features.compute_normals(INPUT_PC.coordinates,threshold,k)
+# params = Detection.Initializer(INPUT_PC, par, threshold, failed, N, k, Int64[])
+# hyperplanes0 = Detection.iterate_detection(params; debug = true)
+#
+# union!(hyperplanes,hyperplanes0)
+# function DrawPlanes(planes::Array{Detection.Hyperplane,1}; box_oriented=true)::Common.LAR
+# 	out = Array{Common.Struct,1}()
+# 	for obj in planes
+# 		plane = Common.Plane(obj.direction,obj.centroid)
+# 		if box_oriented
+# 			box = Common.ch_oriented_boundingbox(obj.inliers.coordinates)
+# 		else
+# 			box = Common.AABB(obj.inliers.coordinates)
+# 		end
+# 		cell = Common.getmodel(plane,box)
+# 		push!(out, Common.Struct([cell]))
+# 	end
+# 	out = Common.Struct( out )
+# 	V, EV, FV = Common.struct2lar(out)
+# 	return V, EV, FV
+# end
+# function DrawPlanes(plane::Detection.Hyperplane; box_oriented=true)
+# 	return DrawPlanes([plane],box_oriented=box_oriented)
+# end
+#
+# V,FV = DrawPlanes(hyperplanes; box_oriented = false)
+#
+# Visualization.VIEW([
+# 	Visualization.GLGrid(Common.apply_matrix(Common.t(-centroid...),V),FV,Visualization.COLORS[1],0.8)
+# ])
 
-dict1 = Dict("a"=>1,"b"=>2)
-dict2 = Dict("a"=>3,"c"=>2)
-
-merge(dict1,dict2)
-
-INPUT_PC = FileManager.source2pc(raw"C:\Users\marte\Documents\potreeDirectory\pointclouds\MURI\data\r\r0464.las")
-par = 0.04
-failed = 10
-N = 5
-k = 10
-threshold = Detection.Features.estimate_threshold(INPUT_PC,2*k)
-INPUT_PC.normals = Detection.Features.compute_normals(INPUT_PC.coordinates,threshold,k)
-params = Detection.Initializer(INPUT_PC, par, threshold, failed, N, k, Int64[])
-hyperplanes = Detection.iterate_detection(params; debug = true)
-
-
-function DrawPlanes(planes::Array{Detection.Hyperplane,1}; box_oriented=true)::Common.LAR
+function DrawPlanes(dict, AABB::Common.AABB)::Common.LAR
 	out = Array{Common.Struct,1}()
-	for obj in planes
-		plane = Common.Plane(obj.direction,obj.centroid)
-		if box_oriented
-			box = Common.ch_oriented_boundingbox(obj.inliers.coordinates)
-		else
-			box = Common.AABB(obj.inliers.coordinates)
+	n_planes=0
+	for (k,v) in dict
+		for c in v
+			plane = Common.Plane(k,c)
+			cell = Common.getmodel(plane,AABB)
+			push!(out, Common.Struct([cell]))
+			n_planes+=1
 		end
-		cell = Common.getmodel(plane,box)
-		push!(out, Common.Struct([cell]))
 	end
 	out = Common.Struct( out )
 	V, EV, FV = Common.struct2lar(out)
+	@show n_planes
 	return V, EV, FV
 end
-function DrawPlanes(plane::Detection.Hyperplane; box_oriented=true)
-	return DrawPlanes([plane],box_oriented=box_oriented)
-end
 
-centroid = Common.centroid(INPUT_PC.coordinates)
-V,FV = DrawPlanes(hyperplanes; box_oriented = false)
+
+V,EV,FV = DrawPlanes(cmtree.root.dict,aabb)
 
 Visualization.VIEW([
-	Visualization.points(Common.apply_matrix(Common.t(-centroid...),INPUT_PC.coordinates),INPUT_PC.rgbs),
-	Visualization.GLGrid(Common.apply_matrix(Common.t(-centroid...),V),FV,Visualization.COLORS[1],0.8)
+	Visualization.points(Common.apply_matrix(Common.t(-centroid...),INPUT_PC.coordinates),INPUT_PC.rgbs)
+	Visualization.GLGrid(Common.apply_matrix(Common.t(-centroid...),V),FV,Visualization.COLORS[1],0.2)
 ])

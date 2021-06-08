@@ -5,7 +5,7 @@ Single node of Comaptree.
 
 # Constructors
 ```jldoctest
-CWNode(index::Int, level::Int)::CWNode
+CWNode()::CWNode
 CWNode(index::Int, level::Int)::CWNode
 ```
 
@@ -21,7 +21,7 @@ children::Vector{Union{Nothing,CWNode}}
 mutable struct CWNode
 	level::Int
 	index::Int
-	dict::Dict{Vector{Float64},Vector{Vector{Float64}}}
+	dict::Dict{Vector{Float64},Vector{Vector{Float64}}} # [a,b,c] => [d1,d2,d3,d4,...,dn]
 	parent::Union{Nothing,CWNode}
 	children::Vector{Union{Nothing,CWNode}}
 end
