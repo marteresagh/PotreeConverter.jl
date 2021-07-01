@@ -109,7 +109,11 @@ end
 function planes(box,plane,aabb)
 	println("planes")
 
-	M = Common.t(aabb.min...)*Common.s(aabb.size...)
+	min = [aabb.x_min,aabb.y_min,aabb.z_min]
+	max = [aabb.x_max,aabb.y_max,aabb.z_max]
+	size = max-min
+
+	M = Common.t(min...)*Common.s(size...)
 	plane_transf = Common.apply_matrix(Common.inv(M),plane)
 
 	points = testplane(plane_transf)

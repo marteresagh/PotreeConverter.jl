@@ -3,8 +3,19 @@
 """
 function potree2bim(potree::String; LOD::Int64=-1)
     collection = get_nodes(potree; LOD = LOD)
+    out = Array{Common.Struct,1}()
+    for node in collection
+        V,FVs = node2bim(node)
+        push!(out, Common.Struct([V,FVs])) # triangles cells
+    end
+    out = Common.Struct( out )
+	V, FVs = Common.struct2lar(out)
+	return V,FVs
 end
 
+"""
+    get_nodes(potree::String; LOD::Int64=-1)
+"""
 function get_nodes(potree::String; LOD::Int64=-1)
 
     writer = PotreeWriter(potree, PotreeConverter.DEFAULT)
@@ -15,7 +26,6 @@ function get_nodes(potree::String; LOD::Int64=-1)
 
     if LOD == -1
 
-        @show "sono qui"
         function leafnode(collection::Vector{String})
             function callback0(node::PWNode)
                 if isLeafNode(node)
@@ -29,7 +39,6 @@ function get_nodes(potree::String; LOD::Int64=-1)
         return unique(collection)
     else
 
-        @show "oppure qui"
         function levelnode(collection::Vector{String})
             function callback0(node::PWNode)
                 if node.level == LOD
@@ -43,24 +52,47 @@ function get_nodes(potree::String; LOD::Int64=-1)
         return collection
     end
 
+end
+
+
+"""
+    node2bim(node::String)
+"""
+function node2bim(node::String)
+    hyperplanes = plane_identification(node)
+
+    if !isempty(hyperplanes)
+
+		# intersezione piani-octree
+		W, FW, EW = get_intersection(node, hyperplanes)
+
+		# arrangement
+        V, copEV, copFE, copCF = arrangement(W, FW, EW)
+        println("FINE ARRANGEMENT")
+
+		# costruzione modello
+        V = permutedims(V)
+        model = pols2tria(V, copEV, copFE, copCF)
+
+		# pulitura del modello
+		V, FVs = get_cells(model, hyperplanes)
+
+		return V,FVs
+    end
 
 end
 
 
-
 """
-	identification(node::CWNode,node_potree::PWNode)
+	plane_identification(node::CWNode,node_potree::PWNode)
 
 Get cluster of coplanar planes.
 """
-function identification(node::CWNode, node_potree::PWNode)
-    println("== identification ==")
+function plane_identification(node::String)
 
-    points_pos = map(s -> s.position, node_potree.store)
-    points = hcat(points_pos...)
-
-    points_rgb = map(s -> s.color, node_potree.store)
-    rgb = hcat(points_rgb...)
+    pc = FileManager.las2pointcloud(node)
+    points = pc.coordinates
+    rgb = pc.rgbs
 
     hyperplanes = nothing
 
@@ -85,62 +117,66 @@ function identification(node::CWNode, node_potree::PWNode)
 
 end
 
+"""
+	get_intersection(node, hyperplanes)
+"""
+function get_intersection(node, hyperplanes)
+	n_planes = length(hyperplanes)
 
-function nuova_procedura(node, node_potree)
-    hyperplanes = identification(node, node_potree)
-    n_planes = length(hyperplanes)
+	aabb_octree = FileManager.las2aabb(node)
+	V, EV, FV = Common.getmodel(aabb_octree)
 
-    if n_planes != 0
-        aabb_octree = node_potree.aabb
-        V, EV, FV = getmodel(aabb_octree)
-        box = [Common.Struct([(V, FV, EV)])]
+	box = [Common.Struct([(V, FV, EV)])]
 
-        cells = Vector{Vector{Vector{Int64}}}()
-        for k = 1:n_planes
-            hyperplane = hyperplanes[k]
-            pl = Plane(hyperplane.direction, hyperplane.centroid)
-            plane =
-                hyperplane.centroid .+ hcat(
-                    [0.0, 0.0, 0.0],
-                    pl.basis[:, 1] * 0.01,
-                    pl.basis[:, 2] * 0.01,
-                )
-            planes(box, plane, aabb_octree)
-        end
+	for k = 1:n_planes
+		hyperplane = hyperplanes[k]
+		pl = Plane(hyperplane.direction, hyperplane.centroid)
+		plane =
+			hyperplane.centroid .+ hcat(
+				[0.0, 0.0, 0.0],
+				pl.basis[:, 1] * 0.01,
+				pl.basis[:, 2] * 0.01,
+			)
+		planes(box, plane, aabb_octree)
+	end
 
+	W, FW, EW = Common.struct2lar(Common.Struct(box))
 
-        W, FW, EW = Common.struct2lar(Common.Struct(box))
+	return W, FW, EW
+end
 
-        cop_EV = coboundary_0(EW)
-        cop_FE = coboundary_1(W, FW, EW)
-        W = permutedims(W)
+"""
+	arrangement(W, FW, EW)
+"""
+function arrangement(W, FW, EW)
+	cop_EV = coboundary_0(EW)
+	cop_FE = coboundary_1(W, FW, EW)
+	W = permutedims(W)
 
-        V, copEV, copFE, copCF = space_arrangement(W, cop_EV, cop_FE)
-        println("FINE ARRANGEMENT")
+	V, copEV, copFE, copCF = space_arrangement(W, cop_EV, cop_FE);
+end
 
-        V = permutedims(V)
-        V, CVs, FVs, EVs = pols2tria(V, copEV, copFE, copCF) # whole assembly
-        # return V,CVs,FVs,EVs
+"""
+	get_cells(model, hyperplanes)
+"""
+function get_cells(model, hyperplanes)
+	V, CVs, FVs, EVs = model
+	tokeep = Vector{Vector{Vector{Int64}}}()
 
-        # per ogni 2-cella in FVs andare ad eliminare le celle che non fanno parte del modello
-        # sfruttando gli inliers
-        for k = 1:n_planes
-            hyperplane = hyperplanes[k]
-            inliers = hyperplane.inliers.coordinates
-            kdtree = Detection.Search.KDTree(inliers)
-            for fv in FVs
-                index = union(fv...)
-                points = V[:, index]
-                centroid = Common.centroid(points)
-                near = Detection.Search.inrange(kdtree, centroid, 0.05)
-                if !isempty(near)
-                    push!(cells, fv)
-                end
-            end
-        end
+	for k = 1:n_planes
+		hyperplane = hyperplanes[k]
+		inliers = hyperplane.inliers.coordinates
+		kdtree = Detection.Search.KDTree(inliers)
+		for fv in FVs
+			index = union(fv...)
+			points = V[:, index]
+			centroid = Common.centroid(points)
+			near = Detection.Search.inrange(kdtree, centroid, 0.05)
+			if !isempty(near)
+				push!(tokeep, fv)
+			end
+		end
+	end
 
-        node.cells = Common.Struct([(V, cells)])
-        return V, cells
-    end
-
+	return V, tokeep
 end
