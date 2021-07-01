@@ -4,11 +4,19 @@ using FileManager
 using Detection
 using Visualization
 
-potree = raw"C:\Users\marte\Documents\Julia_package\UTILS\potreeoriginale\MURI"
+# potree = raw"C:\Users\marte\Documents\Julia_package\UTILS\potreeoriginale\MURI"
+# procedura su tutte le foglie
+# V,FVs = PotreeConverter.potree2bim(potree; LOD=-1)
+#
+# Visualization.VIEW([
+#     Visualization.points(Common.apply_matrix(traslazione,PC.coordinates),PC.rgbs),
+#     Visualization.GLGrid(Common.apply_matrix(traslazione,octree[1]),octree[2],Visualization.COLORS[7]),
+#     Visualization.GLExplode(Common.apply_matrix(traslazione,V),FVs,1,1,1,99,1)...
+#     ]);
 
-collection = PotreeConverter.get_nodes(potree; LOD = -1)
+# collection = PotreeConverter.get_nodes(potree; LOD = -1)
 
-node = collection[3]
+node = raw"C:\Users\marte\Documents\Julia_package\UTILS\potreeoriginale\MURI\data\r/r0.las"#collection[1]
 
 hyperplanes = PotreeConverter.plane_identification(node)
 
@@ -45,6 +53,13 @@ Visualization.VIEW([
     ])
 
 # arrangement
+open("modello.txt","w") do s
+    write(s,"W = $W\n\n")
+    write(s,"FW = $FW\n\n")
+    write(s,"EW = $EW\n\n")
+end
+
+
 V, copEV, copFE, copCF = PotreeConverter.arrangement(W, FW, EW)
 
 # costruzione modello
@@ -62,11 +77,7 @@ Visualization.VIEW(Visualization.GLExplode(Common.apply_matrix(traslazione,V),CV
 F, FFs = PotreeConverter.get_cells(model, hyperplanes)
 
 Visualization.VIEW([
-    Visualization.points(Common.apply_matrix(traslazione,PC.coordinates),PC.rgbs),
+    #Visualization.points(Common.apply_matrix(traslazione,PC.coordinates),PC.rgbs),
     Visualization.GLGrid(Common.apply_matrix(traslazione,octree[1]),octree[2],Visualization.COLORS[7]),
     Visualization.GLExplode(Common.apply_matrix(traslazione,F),FFs,1,1,1,99,1)...
     ]);
-
-
-
-V,FVs = PotreeConverter.potree2bim(potree; LOD=-1)

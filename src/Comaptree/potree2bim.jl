@@ -6,11 +6,10 @@ function potree2bim(potree::String; LOD::Int64=-1)
     collection = get_nodes(potree; LOD = LOD)
     out = Array{Common.Struct,1}()
 
-    for i in 1:length(collection)
-		print(i)
-		node = collection[i]
+    for node in collection
+		println("=== node: $node ===")
         V,FVs = node2bim(node)
-        push!(out, Common.Struct([V,FVs])) # triangles cells
+        push!(out, Common.Struct([(V,FVs)])) # triangles cells
     end
 
     out = Common.Struct( out )
@@ -35,7 +34,7 @@ function get_nodes(potree::String; LOD::Int64=-1)
         function leafnode(collection::Vector{String})
             function callback0(node::PWNode)
                 if isLeafNode(node)
-                    push!(collection, joinpath(dataDir,path(node,writer))) #node.parent
+                    push!(collection, joinpath(dataDir,path(node.parent,writer))) #node.parent
                 end
             end
             return callback0
@@ -67,6 +66,7 @@ end
 function node2bim(node::String)
     hyperplanes = plane_identification(node)
 
+		try
     if !isempty(hyperplanes)
 
 		# intersezione piani-octree
@@ -85,6 +85,8 @@ function node2bim(node::String)
 
 		return V,FVs
     end
+	catch y
+	end
 
 end
 
