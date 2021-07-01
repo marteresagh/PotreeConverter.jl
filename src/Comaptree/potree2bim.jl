@@ -2,15 +2,21 @@
     potree2bim(potree::String)
 """
 function potree2bim(potree::String; LOD::Int64=-1)
+
     collection = get_nodes(potree; LOD = LOD)
     out = Array{Common.Struct,1}()
-    for node in collection
+
+    for i in 1:length(collection)
+		print(i)
+		node = collection[i]
         V,FVs = node2bim(node)
         push!(out, Common.Struct([V,FVs])) # triangles cells
     end
+
     out = Common.Struct( out )
 	V, FVs = Common.struct2lar(out)
 	return V,FVs
+
 end
 
 """
@@ -29,7 +35,7 @@ function get_nodes(potree::String; LOD::Int64=-1)
         function leafnode(collection::Vector{String})
             function callback0(node::PWNode)
                 if isLeafNode(node)
-                    push!(collection, joinpath(dataDir,path(node.parent,writer)))
+                    push!(collection, joinpath(dataDir,path(node,writer))) #node.parent
                 end
             end
             return callback0
@@ -64,7 +70,7 @@ function node2bim(node::String)
     if !isempty(hyperplanes)
 
 		# intersezione piani-octree
-		W, FW, EW = get_intersection(node, hyperplanes)
+		W, FW, EW = myget_intersection(node, hyperplanes)
 
 		# arrangement
         V, copEV, copFE, copCF = arrangement(W, FW, EW)
@@ -117,6 +123,16 @@ function plane_identification(node::String)
 
 end
 
+
+function myget_intersection(node, hyperplanes)
+	aabb = FileManager.las2aabb(node)
+	planes = [Plane(hyperplane.direction,hyperplane.centroid) for hyperplane in hyperplanes]
+	# intersezione piani-octree
+	W,EW,FW = draw_planes(planes, aabb)
+	return W,FW,EW
+end
+
+
 """
 	get_intersection(node, hyperplanes)
 """
@@ -163,7 +179,7 @@ function get_cells(model, hyperplanes)
 	V, CVs, FVs, EVs = model
 	tokeep = Vector{Vector{Vector{Int64}}}()
 
-	for k = 1:n_planes
+	for k = 1:length(hyperplanes)
 		hyperplane = hyperplanes[k]
 		inliers = hyperplane.inliers.coordinates
 		kdtree = Detection.Search.KDTree(inliers)

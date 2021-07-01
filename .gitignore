@@ -1,0 +1,12 @@
+# Julia GitIgnore
+*.jl.cov
+*.jl.*.cov
+*.jl.mem
+deps/deps.jl
+
+# Apple GitIgnore
+*.DS_Store
+
+*WiP*
+
+Manifest.toml
