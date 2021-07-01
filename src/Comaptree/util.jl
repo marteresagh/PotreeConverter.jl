@@ -11,34 +11,11 @@ function get_planes(points,rgb)
     return hyperplanes
 end
 
-
-#
-# """
-#     merge_verts(points, radius = 0.01)
-# Merge congruent points.
-# """
-# function merge_verts(points, radius = 0.01)
-#     n_points = size(points,2)
-#     label = collect(1:n_points)
-#     kdtree = Detection.Search.KDTree(points)
-#     visited = Int64[]
-#     for vi in 1:n_points
-#         if !(label[vi] in visited)
-#             nearvs = Detection.Search.inrange(kdtree, points[:,vi], radius)
-#             label[nearvs] .= vi
-#             push!(visited,vi)
-#         end
-#     end
-#     new_verts = []
-#     visited = Int64[]
-#     for i in 1:n_points
-#         ind = label[i]
-#         if !(ind in visited)
-#             element = findall(x->x==ind, label)
-#             cent = Common.centroid(points[:,element])
-#             push!(new_verts,cent)
-#             push!(visited,ind)
-#         end
-#     end
-#     return hcat(new_verts...)
-# end
+function getmodel(aabb::pAABB)::Common.LAR
+	V = [	aabb.min[1]  aabb.min[1]  aabb.min[1]  aabb.min[1]  aabb.max[1]  aabb.max[1]  aabb.max[1]  aabb.max[1];
+		 	aabb.min[2]  aabb.min[2]  aabb.max[2]  aabb.max[2]  aabb.min[2]  aabb.min[2]  aabb.max[2]  aabb.max[2];
+		 	aabb.min[3]  aabb.max[3]  aabb.min[3]  aabb.max[3]  aabb.min[3]  aabb.max[3]  aabb.min[3]  aabb.max[3] ]
+	EV = [[1, 2],  [3, 4], [5, 6],  [7, 8],  [1, 3],  [2, 4],  [5, 7],  [6, 8],  [1, 5],  [2, 6],  [3, 7],  [4, 8]]
+	FV = [[1, 2, 3, 4],  [5, 6, 7, 8],  [1, 2, 5, 6],  [3, 4, 7, 8],  [1, 3, 5, 7],  [2, 4, 6, 8]]
+	return V,EV,FV
+end

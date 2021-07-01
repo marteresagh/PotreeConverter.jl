@@ -7,6 +7,10 @@ module PotreeConverter
     using Detection.Search.NearestNeighbors
     using FileManager.LasIO
     using LasIO.FileIO
+    using SparseArrays
+    using Triangulate
+    using OrderedCollections
+    using IntervalTrees
 
     macro format(ex)
        quote
@@ -39,25 +43,33 @@ module PotreeConverter
     const cellSizeFactor = 5.0
 
     # POTREE CONVERTER
-    include("struct.jl")
-    include("stuff.jl")
-    include("PotreeWriter.jl")
-    include("PotreeArguments.jl")
-    include("AABB.jl")
-    include("SparseGrid.jl")
-    include("GridCell.jl")
-    include("PWNode.jl")
-    include("Point.jl")
-    include("lasIO.jl")
-    include("cloudjs.jl")
-    include("convert.jl")
-    include("main.jl")
+    include("Potree/struct.jl")
+    include("Potree/stuff.jl")
+    include("Potree/PotreeWriter.jl")
+    include("Potree/PotreeArguments.jl")
+    include("Potree/AABB.jl")
+    include("Potree/SparseGrid.jl")
+    include("Potree/GridCell.jl")
+    include("Potree/PWNode.jl")
+    include("Potree/Point.jl")
+    include("Potree/lasIO.jl")
+    include("Potree/cloudjs.jl")
+    include("Potree/convert.jl")
+    include("Potree/main.jl")
 
     # COMAPTREE
     include("Comaptree/struct.jl")
     include("Comaptree/expand.jl")
     include("Comaptree/CWNode.jl")
-    include("Comaptree/comaptree.jl")
+    include("Comaptree/potree2bim.jl")
     include("Comaptree/util.jl")
 
+    # COMAPTREE
+    include("LAR/arrangement.jl")
+    include("LAR/util.jl")
+    include("LAR/boundary.jl")
+    include("LAR/planar_arrangement.jl")
+    include("LAR/refactoring.jl")
+    include("LAR/minimal_cycles.jl")
+    include("LAR/tgw3d.jl")
 end # module

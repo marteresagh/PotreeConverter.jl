@@ -42,7 +42,7 @@ using Visualization
 #################################################
 
 # potree = raw"C:\Users\marte\Documents\Julia_package\UTILS\potreeoriginale\MURI"
-potree = raw"C:\Users\marte\Documents\potreeDirectory\pointclouds\MURI"
+potree = raw"C:\Users\marte\Documents\potreeDirectory\pointclouds\SCAN_TOTALE_CASALETTO"
 leaves = FileManager.get_leaf(potree2trie(potree))
 INPUT_PC = FileManager.source2pc(potree,0)
 cloudmetadata = CloudMetadata(potree)
