@@ -1,5 +1,4 @@
-function get_planes(points,rgb)
-    INPUT_PC = Common.PointCloud(points,rgb)
+function get_planes(INPUT_PC)
     par = 0.04
     failed = 10
     N = 10
@@ -20,15 +19,33 @@ function getmodel(aabb::pAABB)::Common.LAR
 	return V,EV,FV
 end
 
+#
+# function draw_planes(planes::Array{Common.Plane,1}, box::Common.AABB)::Common.LAR
+# 	octree = Common.getmodel(box)
+# 	out = [Common.Struct([octree]) ]
+#
+# 	for i in 1:length(planes)
+# 		plane = planes[i]
+# 		V,EV,FV = Common.getmodel(plane, box)
+# 		push!(out, Common.Struct([(V,EV,[union(FV...)])])) # unique cells
+# 	end
+#
+# 	out = Common.Struct( out )
+# 	V, EV, FV = Common.struct2lar(out)
+#
+# 	return V, EV, FV
+# end
+
 
 function draw_planes(planes::Array{Common.Plane,1}, box::Common.AABB)::Common.LAR
-	octree = Common.getmodel(box)
-	out = [Common.Struct([octree]) ]
+	# octree = Common.getmodel(box)
+	# out = [Common.Struct([octree]) ]
 
+	out = Common.Struct[]
 	for i in 1:length(planes)
 		plane = planes[i]
-		V,EV,FV = Common.getmodel(plane, box)
-		push!(out, Common.Struct([(V,EV,[union(FV...)])])) # unique cells
+		model = Common.getmodel(plane, box)
+		push!(out, Common.Struct([model])) # unique cells
 	end
 
 	out = Common.Struct( out )

@@ -1,40 +1,74 @@
+mutable struct Annotations
+    nFiles::Int
+    filesProcessed::Int
+    filesFailed::Int
+    txt::Union{Nothing,IOStream}
+    octreePlanes::Array{Common.Struct,1}
+    octreeLeaves::Array{Common.Struct,1}
+end
+
+function Annotations()
+    nFiles = 0
+    filesProcessed = 0
+    filesFailed = 0
+    txt = nothing
+    octreeLeaves = Array{Common.Struct,1}()
+    octreePlanes = Array{Common.Struct,1}()
+    return Annotations(nFiles, filesProcessed, filesFailed, txt, octreePlanes, octreeLeaves)
+end
+
 """
     potree2bim(potree::String)
 """
-function potree2bim(potree::String; LOD::Int64=-1)
+function potree2bim(potree::String; txt::String = "log_errored_files.txt", LOD::Int64 = -1)
 
+    annotations = Annotations()
     collection = get_nodes(potree; LOD = LOD)
+    annotations.nFiles = length(collection)
     out = Array{Common.Struct,1}()
 
+    annotations.txt = open(txt,"w")
+    hyperplanes = Detection.Hyperplane[]
     for node in collection
-		println("=== node: $node ===")
-        V,FVs = node2bim(node)
-        push!(out, Common.Struct([(V,FVs)])) # triangles cells
+        println("=== node: $node ===")
+        hypes = node2bim(node, annotations)
+        # # model = node2bim(node, annotations)
+        # if !isnothing(model)
+        #     push!(out, Common.Struct([model])) # triangles cells
+        # end
+        union!(hyperplanes,hypes)
     end
+    close(annotations.txt)
 
-    out = Common.Struct( out )
-	V, FVs = Common.struct2lar(out)
-	return V,FVs
-
+    # out = Common.Struct(out)
+    # # V, FVs
+    # W, FW, EW = Common.struct2lar(out)
+    #
+    # # V, FVs
+    # return W, FW, EW, annotations
+    return hyperplanes
 end
 
 """
     get_nodes(potree::String; LOD::Int64=-1)
 """
-function get_nodes(potree::String; LOD::Int64=-1)
+function get_nodes(potree::String; LOD::Int64 = -1)
 
     writer = PotreeWriter(potree, PotreeConverter.DEFAULT)
     cloudjs = PotreeConverter.loadStateFromDisk(writer)
 
     collection = String[]
-    dataDir = joinpath(potree,"data")
+    dataDir = joinpath(potree, "data")
 
     if LOD == -1
 
         function leafnode(collection::Vector{String})
             function callback0(node::PWNode)
                 if isLeafNode(node)
-                    push!(collection, joinpath(dataDir,path(node.parent,writer))) #node.parent
+                    push!(
+                        collection,
+                        joinpath(dataDir, path(node, writer)),
+                    ) #node.parent non va bene questa cosa del parent a -1,
                 end
             end
             return callback0
@@ -47,7 +81,7 @@ function get_nodes(potree::String; LOD::Int64=-1)
         function levelnode(collection::Vector{String})
             function callback0(node::PWNode)
                 if node.level == LOD
-                    push!(collection, joinpath(dataDir,path(node,writer)))
+                    push!(collection, joinpath(dataDir, path(node, writer)))
                 end
             end
             return callback0
@@ -63,31 +97,60 @@ end
 """
     node2bim(node::String)
 """
-function node2bim(node::String)
-    hyperplanes = plane_identification(node)
+function node2bim(node::String, annotations::Annotations)
+    function killafterseconds(s,task)
+        @async begin
+             schedule(task)
+         end
 
-		try
-    if !isempty(hyperplanes)
+        begin
+            sleep(s)
+            println("terminating after $s seconds")
+            if !istaskdone(task)
+                println("INTERROTTO")
+                Base.throwto(task, InterruptException())
+            else
+                println("TERMINATO")
+                return fetch(task)
+            end
+        end
 
-		# intersezione piani-octree
-		W, FW, EW = myget_intersection(node, hyperplanes)
-
-		# arrangement
-        V, copEV, copFE, copCF = arrangement(W, FW, EW)
-        println("FINE ARRANGEMENT")
-
-		# costruzione modello
-        V = permutedims(V)
-        model = pols2tria(V, copEV, copFE, copCF)
-
-		# pulitura del modello
-		V, FVs = get_cells(model, hyperplanes)
-
-		return V,FVs
     end
-	catch y
-	end
 
+    hyperplanes = plane_identification(node)
+    return hyperplanes
+
+    try
+        if !isempty(hyperplanes)
+
+            # intersezione piani-octree
+            println("intersezioni")
+            myget_intersection(node, hyperplanes, annotations)
+            # return W, FW, EW
+            # arrangement e kill task if loop
+
+            task = @task arrangement(W, FW, EW)
+            println("INIZIO ARRANGEMENT")
+            V, copEV, copFE, copCF = killafterseconds(60, task)
+            println("FINE ARRANGEMENT")
+
+            # costruzione modello
+            V = permutedims(V)
+            model = pols2tria(V, copEV, copFE, copCF)
+
+            # pulitura del modello
+            V, FVs = get_cells(model, hyperplanes)
+            annotations.filesProcessed +=1
+            return V, FVs
+        end
+    catch y
+        annotations.filesFailed +=1
+        write(annotations.txt,"node: $node\n")
+        write(annotations.txt,"#planes: $(length(hyperplanes))\n")
+        write(annotations.txt," ")
+    end
+
+    return nothing
 end
 
 
@@ -102,7 +165,7 @@ function plane_identification(node::String)
     points = pc.coordinates
     rgb = pc.rgbs
 
-    hyperplanes = nothing
+    hyperplanes = Detection.Hyperplane[]
 
     if size(points, 2) >= 3
         direction, centroid = Common.LinearFit(points)
@@ -126,12 +189,18 @@ function plane_identification(node::String)
 end
 
 
-function myget_intersection(node, hyperplanes)
-	aabb = FileManager.las2aabb(node)
-	planes = [Plane(hyperplane.direction,hyperplane.centroid) for hyperplane in hyperplanes]
-	# intersezione piani-octree
-	W,EW,FW = draw_planes(planes, aabb)
-	return W,FW,EW
+function myget_intersection(node, hyperplanes, annotations)
+    aabb = FileManager.las2aabb(node)
+    planes = [
+        Plane(hyperplane.direction, hyperplane.centroid)
+        for hyperplane in hyperplanes
+    ]
+    # intersezione piani-octree
+    W, FW, EW = draw_planes(planes, aabb)
+    # push!(annotations.octreeLeaves, Common.Struct([Common.getmodel(aabb)]))
+    # push!(annotations.octreePlanes, Common.Struct([model]))
+    # @show "FATTO"
+    return W, FW, EW
 end
 
 
@@ -139,62 +208,59 @@ end
 	get_intersection(node, hyperplanes)
 """
 function get_intersection(node, hyperplanes)
-	n_planes = length(hyperplanes)
+    n_planes = length(hyperplanes)
 
-	aabb_octree = FileManager.las2aabb(node)
-	V, EV, FV = Common.getmodel(aabb_octree)
+    aabb_octree = FileManager.las2aabb(node)
+    V, EV, FV = Common.getmodel(aabb_octree)
 
-	box = [Common.Struct([(V, FV, EV)])]
+    box = [Common.Struct([(V, FV, EV)])]
 
-	for k = 1:n_planes
-		hyperplane = hyperplanes[k]
-		pl = Plane(hyperplane.direction, hyperplane.centroid)
-		plane =
-			hyperplane.centroid .+ hcat(
-				[0.0, 0.0, 0.0],
-				pl.basis[:, 1] * 0.01,
-				pl.basis[:, 2] * 0.01,
-			)
-		planes(box, plane, aabb_octree)
-	end
+    for k = 1:n_planes
+        hyperplane = hyperplanes[k]
+        pl = Plane(hyperplane.direction, hyperplane.centroid)
+        plane =
+            hyperplane.centroid .+
+            hcat([0.0, 0.0, 0.0], pl.basis[:, 1] * 0.01, pl.basis[:, 2] * 0.01)
+        planes(box, plane, aabb_octree)
+    end
 
-	W, FW, EW = Common.struct2lar(Common.Struct(box))
+    W, FW, EW = Common.struct2lar(Common.Struct(box))
 
-	return W, FW, EW
+    return W, FW, EW
 end
 
 """
 	arrangement(W, FW, EW)
 """
 function arrangement(W, FW, EW)
-	cop_EV = coboundary_0(EW)
-	cop_FE = coboundary_1(W, FW, EW)
-	W = permutedims(W)
+    cop_EV = coboundary_0(EW)
+    cop_FE = coboundary_1(W, FW, EW)
+    W = permutedims(W)
 
-	V, copEV, copFE, copCF = space_arrangement(W, cop_EV, cop_FE);
+    V, copEV, copFE, copCF = space_arrangement(W, cop_EV, cop_FE)
 end
 
 """
 	get_cells(model, hyperplanes)
 """
 function get_cells(model, hyperplanes)
-	V, CVs, FVs, EVs = model
-	tokeep = Vector{Vector{Vector{Int64}}}()
+    V, CVs, FVs, EVs = model
+    tokeep = Vector{Vector{Vector{Int64}}}()
 
-	for k = 1:length(hyperplanes)
-		hyperplane = hyperplanes[k]
-		inliers = hyperplane.inliers.coordinates
-		kdtree = Detection.Search.KDTree(inliers)
-		for fv in FVs
-			index = union(fv...)
-			points = V[:, index]
-			centroid = Common.centroid(points)
-			near = Detection.Search.inrange(kdtree, centroid, 0.05)
-			if !isempty(near)
-				push!(tokeep, fv)
-			end
-		end
-	end
+    for k = 1:length(hyperplanes)
+        hyperplane = hyperplanes[k]
+        inliers = hyperplane.inliers.coordinates
+        kdtree = Detection.Search.KDTree(inliers)
+        for fv in FVs
+            index = union(fv...)
+            points = V[:, index]
+            centroid = Common.centroid(points)
+            near = Detection.Search.inrange(kdtree, centroid, 0.05)
+            if !isempty(near)
+                push!(tokeep, fv)
+            end
+        end
+    end
 
-	return V, tokeep
+    return V, tokeep
 end
