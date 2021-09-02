@@ -87,9 +87,8 @@ function processTree(writer::PotreeWriter, comaptree::ComaptreeWriter)
 
 				identification(node,file_node)
 			else
-				# @assert isInnerNode(node_potree) == isInnerNode(node) "comaptree not isomorphic to potree"
-				# println("internal node: $ref_name")
-				# unification(node)
+				println("internal node: $ref_name")
+				unification(node,file_node)
 				# resolution(node)
 			end
 			node_potree.store = Point[]
@@ -109,17 +108,8 @@ Get cluster of coplanar planes.
 function identification(node::CWNode,file_node::String)
 	println("== identification ==")
 	PC = FileManager.source2pc(file_node)
-	hyperplanes = get_planes(PC)
-	println("$(length(hyperplanes)) planes found")
-	# for hyperplane in hyperplanes
-	# 	dir = Common.approxVal(4).(hyperplane.direction)
-	# 	if haskey(node.dict,dir)
-	# 		push!(node.dict[dir], Common.approxVal(4).(hyperplane.centroid))
-	# 	else
-	# 		node.dict[dir] = [Common.approxVal(4).(hyperplane.centroid)]
-	# 	end
-	# end
-
+	node.hyperplanes = get_planes(PC)
+	println("$(length(node.hyperplanes)) planes found")
 end
 
 
@@ -128,109 +118,51 @@ end
 
 Unification.
 """
-# function unification(node::CWNode, node_potree::PWNode)
-# 	println("== unification ==")
-# 	planes = Vector{Float64}[]
-# 	key_norm = nothing
-# 	temp = Dict()
-# 	for child in node.children
-# 		if !isnothing(child)
-# 			for (k,v) in child.dict
-# 				if isnothing(key_norm)
-# 					key_norm = k # solo la prima volta
-# 				end
-#
-# 				if Common.dot(key_norm,k) < 0
-# 					# @show "qui"
-# 					# for cen in v
-# 					# 	push!(planes,[-k..., Common.dot(-k,cen)])
-# 					# end
-#
-# 				else
-# 					# @show "qua"
-# 					# for cen in v
-# 					# 	push!(planes,[k..., Common.dot(k,cen)])
-# 					# end
-# 				end
-# 			end
-# 		end
-# 	end
-#
-# 	@show length(planes)
-# 	covectors = hcat(planes...)
-# 	@show size(covectors)
-# 	tree = KDTree(covectors)
-#
-# 	labels = inrange(tree,covectors,0.01)
-# 	clustering = unique(labels)
-#
-#
-# 	for cluster in clustering
-# 		plane = Common.centroid(covectors[:,cluster])
-# 		inliers = Vector{Float64}[]
-# 		for point in node_potree.store
-# 			if Common.distance_point2plane(plane[1:3]*plane[4],plane[1:3])(point.position) < 0.02
-# 				push!(inliers,point.position)
-# 			end
-# 		end
-# 		if length(inliers)>=3
-# 			plane = Plane(hcat(inliers)...)
-# 			flag = false
-# 			for (k,v) in node.dict
-# 				if Common.angle_between_directions(plane.normal,k)<pi/3
-# 					push!(node.dict[k],plane.centroid)
-# 					flag = true
-# 					break
-# 				end
-# 			end
-# 			if !flag
-# 				node.dict[plane.normal] = [plane.centroid]
-# 			end
-#
-# 		end
-# 	end
-#
-# end
-#
-#
-function unification(node::CWNode)
+function unification(node::CWNode, file_node::String)
 	println("== unification ==")
+	PC = FileManager.source2pc(file_node)
 	for child in node.children
 		if !isnothing(child)
-			for (k,v) in child.dict
-				flag = false
-				for (k0,v0) in node.dict
-					if Common.abs(Common.dot(k0,k)) > 0.8
-						union!(node.dict[k0],v)
-						flag = true
-						break
-					end
-				end
-				if !flag
-					node.dict[k] = v
-				end
+			for hyperplane in child.hyperplanes
+
 			end
 		end
 	end
-	# prima di lasciare il nodo unifico i centroidi
 
-	for (k,v) in node.dict
-		res = reshape([Common.dot(k,cen) for cen in v],1,length(v))
-		label = merge_verts(res,0.01)
-		new_verts = []
-	    visited = Int64[]
-	    for i in 1:length(v)
-	        ind = label[i]
-	        if !(ind in visited)
-	            element = findall(x->x==ind, label)
-	            cent = Common.centroid(hcat(v[element]...))
-	            push!(new_verts,cent)
-	            push!(visited,ind)
-	        end
-	    end
-	  	node.dict[k] = new_verts
-	end
+	clustering_planes()
 end
+
+# tutti i piani trovati nei figli e nel nodo seguente
+function clustering_planes(planes::Vector{Detection.Hyperplane})
+	cluster = Detection.Hyperplane[]
+	for plane in planes
+		normal = plane.direction
+		found = false
+		for i in 1:length(cluster)
+			@show Common.abs(Common.dot(cluster[i].direction,normal))
+			if Common.abs(Common.dot(cluster[i].direction,normal)) > 0.8
+
+				# è parallelo
+				@show Common.norm(Common.dot(cluster[i].direction,cluster[i].centroid)-Common.dot(cluster[i].direction,plane.centroid))
+				if Common.norm(Common.dot(cluster[i].direction,cluster[i].centroid)-Common.dot(cluster[i].direction,plane.centroid)) < 0.2
+					# è coincidente
+					found = true
+					inliers = PointCloud(hcat(cluster[i].inliers.coordinates,plane.inliers.coordinates),hcat(cluster[i].inliers.rgbs,plane.inliers.rgbs))
+					direction, centroid = Common.LinearFit(inliers.coordinates)
+					cluster[i] = Detection.Hyperplane(inliers,direction,centroid)
+					break
+				end
+			end
+		end
+		if !found
+			push!(cluster,plane)
+		end
+
+	end
+
+	return cluster
+end
+
 """
 	resolution(node::CWNode)
 

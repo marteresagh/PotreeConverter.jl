@@ -6,7 +6,7 @@ module PotreeConverter
     using Detection
     using Detection.Search.NearestNeighbors
     using FileManager.LasIO
-    using LasIO.FileIO
+    using FileManager.LasIO.FileIO
     using SparseArrays
     using Triangulate
     using OrderedCollections

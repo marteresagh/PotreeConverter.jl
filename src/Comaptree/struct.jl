@@ -23,7 +23,8 @@ mutable struct CWNode
 	index::Int
 	# dict::Dict{Vector{Float64},Vector{Vector{Float64}}} # [a,b,c] => [d1,d2,d3,d4,...,dn]
 
-	cells::Vector{Common.LAR}
+	# cells::Vector{Common.LAR}
+	hyperplanes::Vector{Detection.Hyperplane}
 
 	parent::Union{Nothing,CWNode}
 	children::Vector{Union{Nothing,CWNode}}

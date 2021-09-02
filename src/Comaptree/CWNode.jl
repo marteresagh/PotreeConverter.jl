@@ -2,10 +2,11 @@ function CWNode()
 	level = 0
 	index = -1
     # dict = Dict{Vector{Float64},Vector{Vector{Float64}}}()
-	model_cells = Common.LAR[]
+	# model_cells = Common.LAR[]
+	hyperplanes = Detection.Hyperplane[]
     parent = nothing
     children = Union{Nothing,CWNode}[]
-    return CWNode(level,index,model_cells,parent,children)
+    return CWNode(level,index,hyperplanes,parent,children)
 end
 
 function CWNode(index::Int, level::Int)::CWNode
