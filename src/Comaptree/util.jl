@@ -53,3 +53,13 @@ function draw_planes(planes::Array{Common.Plane,1}, box::Common.AABB)::Common.LA
 
 	return V, EV, FV
 end
+
+
+
+function average_orientation(normals)
+    M = sum([normals[:,i]*normals[:,i]' for i in 1:size(normals,2)])
+    EIG = Common.eigen(M)
+
+    orientation = EIG.vectors[:,3]
+    return Common.normalize(orientation)
+end

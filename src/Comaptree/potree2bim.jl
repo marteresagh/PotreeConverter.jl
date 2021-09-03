@@ -136,11 +136,11 @@ function unification(node::CWNode, file_node::String, par_angle, par_dist)
 	cluster = clustering_planes(planes, par_angle, par_dist)
 	@show length(cluster)
 
-	
+
 	node.hyperplanes = cluster
 end
 
-# tutti i piani trovati nei figli e nel nodo seguente
+# cluster planes portandomi dietro i punti
 function clustering_planes(planes::Vector{Detection.Hyperplane}, par_angle = 0.8, par_dist = 0.2 )
 	cluster = Detection.Hyperplane[]
 	for plane in planes
@@ -167,6 +167,8 @@ function clustering_planes(planes::Vector{Detection.Hyperplane}, par_angle = 0.8
 
 	return cluster
 end
+
+
 
 """
 	resolution(node::CWNode)
