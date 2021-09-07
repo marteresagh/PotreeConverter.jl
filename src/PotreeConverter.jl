@@ -62,6 +62,7 @@ module PotreeConverter
     include("Comaptree/expand.jl")
     include("Comaptree/CWNode.jl")
     include("Comaptree/potree2bim.jl")
+    include("Comaptree/densification.jl")
     include("Comaptree/util.jl")
 
     # COMAPTREE

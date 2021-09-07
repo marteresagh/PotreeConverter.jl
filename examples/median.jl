@@ -14,7 +14,7 @@ end
 
 
 n_v = 100
-vects = [Common.normalize((-1)^rand(2:2)*rand(3)) for i in 1:n_v-1]
+vects = [Common.normalize((-1)^rand(1:2)*rand(3)) for i in 1:n_v-1]
 vectors = hcat([0.;0;0],hcat(vects...))
 EV = [[1,i] for i in 2:n_v]
 

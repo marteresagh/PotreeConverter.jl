@@ -42,12 +42,13 @@ end
 # potree = raw"D:\potreeDirectory\pointclouds\CASALETTO_TERRY_CONCLUSO_DECIMATO"
 potree = raw"C:\Users\marte\Documents\Julia_package\UTILS\potreeoriginale\MURI"
 
-INPUT_PC = FileManager.source2pc(potree,0)
+INPUT_PC = FileManager.source2pc(potree,6)
+
 cloudmetadata = CloudMetadata(potree)
 # PotreeConverter.expand(potree, PotreeConverter.split_leaf)
 aabb = cloudmetadata.boundingBox
 centroid = Common.centroid(getmodel(aabb)[1])
-
+Visualization.VIEW([Visualization.points(Common.apply_matrix(Common.t(-centroid...),INPUT_PC.coordinates),INPUT_PC.rgbs)])
 cmtree = PotreeConverter.potree2comaptree(potree)
 
 PotreeConverter.cut_tree!(cmtree, 3)
