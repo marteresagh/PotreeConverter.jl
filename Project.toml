@@ -4,6 +4,7 @@ authors = ["marteresagh <marteresa28@gmail.com>"]
 version = "0.1.0"
 
 [deps]
+AlphaStructures = "b34a2d8f-0989-4844-9314-dd3cff8ff09b"
 Common = "1e120bc2-2bd2-483a-9663-793997b3971f"
 Detection = "8c84d9e7-d1c0-4468-ae63-6fb7f0258952"
 Features = "a126c2c6-2eda-4948-b40c-a494a421c8a7"

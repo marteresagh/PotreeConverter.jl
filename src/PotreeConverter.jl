@@ -1,5 +1,6 @@
 module PotreeConverter
 
+    using AlphaStructures
     using Common
     using FileManager
     using Printf

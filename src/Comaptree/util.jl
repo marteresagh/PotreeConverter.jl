@@ -1,12 +1,10 @@
-function get_planes(INPUT_PC)
-    par = 0.04
+function get_planes(INPUT_PC, k, par)
     failed = 10
     N = 10
-    k = 10
     threshold = Detection.Features.estimate_threshold(INPUT_PC,2*k)
     INPUT_PC.normals = Detection.Features.compute_normals(INPUT_PC.coordinates,threshold,k)
     params = Detection.Initializer(INPUT_PC, par, threshold, failed, N, k, Int64[])
-    hyperplanes = Detection.iterate_detection(params; debug = true)
+    hyperplanes = Detection.iterate_detection(params)
     return hyperplanes
 end
 
