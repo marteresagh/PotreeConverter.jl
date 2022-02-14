@@ -115,39 +115,42 @@ function potreeconvert(args::PotreeArguments)
 
 	for source in args.sources # Read all sources
 		println("READING: $(source)")
-		header, pointdata = load(source,mmap=true)
-		# open(source) do s
-		# FileManager.LasIO.skiplasf(s)
-		# header = FileManager.LasIO.read(s, FileManager.LasIO.LasHeader)
-		# n = header.records_count
-		# pointtype = FileManager.LasIO.pointformat(header)
+		# header, pointdata = FileIO.load(source)
+		open(source) do s
+			FileManager.LasIO.skiplasf(s)
+			header = FileManager.LasIO.read(s, FileManager.LasIO.LasHeader)
+			n = header.records_count
+			pointtype = FileManager.LasIO.pointformat(header)
 
-		push!(boundingBoxes,pAABB([header.x_min,header.y_min,header.z_min],[header.x_max,header.y_max,header.z_max]));
-		push!(numPoints,convert(Int,header.records_count));
-		push!(sourceFilenames,source)
-		# writeSources(writer.workDir, sourceFilenames, numPoints, boundingBoxes)
+			push!(boundingBoxes,pAABB([header.x_min,header.y_min,header.z_min],[header.x_max,header.y_max,header.z_max]));
+			push!(numPoints,convert(Int,header.records_count));
+			push!(sourceFilenames,source)
+			# writeSources(writer.workDir, sourceFilenames, numPoints, boundingBoxes)
 
-		# for each point in source
-	  	for p in pointdata
-			pointsProcessed += 1
-			point = Point(p, header)
-			add(writer, point)
-			if pointsProcessed % 1_000_000  == 0
-				processStore(writer)
-				# waitUntilProcessed(writer)
+			# for each point in source
+			for i=1:n
+          		p =  FileManager.LasIO.read(s, pointtype)
 
-				elapsed = time() - start
-				print("INDEXING: ")
-				print("$pointsProcessed points processed; ")
-				print("$(writer.numAccepted) points written; ")
-				println("$elapsed second passed")
-			end
-			if pointsProcessed % args.flushLimit == 0
-				print("FLUSHING: ")
-				start_ = time()
-				flush(writer, cloudjs)
-				elapsed = time() - start_
-				println("$elapsed s")
+				pointsProcessed += 1
+				point = Point(p, header)
+				add(writer, point)
+				if pointsProcessed % 1_000_000  == 0
+					processStore(writer)
+					# waitUntilProcessed(writer)
+
+					elapsed = time() - start
+					print("INDEXING: ")
+					print("$pointsProcessed points processed; ")
+					print("$(writer.numAccepted) points written; ")
+					println("$elapsed second passed")
+				end
+				if pointsProcessed % args.flushLimit == 0
+					print("FLUSHING: ")
+					start_ = time()
+					flush(writer, cloudjs)
+					elapsed = time() - start_
+					println("$elapsed s")
+				end
 			end
 		end
 

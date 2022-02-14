@@ -127,14 +127,14 @@ end
 function loadFromDisk(node::PWNode, potreeWriter::PotreeWriter)
 	file_node = joinpath(potreeWriter.workDir, "data", path(node,potreeWriter))
 	open(file_node) do s
-		FileManager.LasIO.skiplasf(s)
-		header = FileManager.LasIO.read(s, FileManager.LasIO.LasHeader)
+		LasIO.skiplasf(s)
+		header = LasIO.read(s, LasIO.LasHeader)
 		n = header.records_count
-		pointtype = FileManager.LasIO.pointformat(header)
+		pointtype = LasIO.pointformat(header)
 		pointdata = Vector{pointtype}(undef, n)
 
 		for i = 1:n
-			pointdata[i] = FileManager.LasIO.read(s, pointtype)
+			pointdata[i] = LasIO.read(s, pointtype)
 			p = Point(pointdata[i], header)
 			if isLeafNode(node)
 				push!(node.store,p)
@@ -266,7 +266,7 @@ function flush(node::PWNode, potreeWriter::PotreeWriter)
 
 			io = open(filepath,"w")
 			mainHeader = newHeader(node.aabb; npoints = node.numAccepted, scale=potreeWriter.scale)
-			write(io, FileManager.LasIO.magic(FileManager.LasIO.format"LAS"))
+			write(io, LasIO.magic(LasIO.format"LAS"))
 			write(io,mainHeader)
 
 			if isfile(temppath)
@@ -274,16 +274,16 @@ function flush(node::PWNode, potreeWriter::PotreeWriter)
 				open(temppath) do s
 					io = open(filepath,"w")
 					mainHeader = newHeader(node.aabb; npoints = node.numAccepted, scale=potreeWriter.scale)
-					write(io, FileManager.LasIO.magic(FileManager.LasIO.format"LAS"))
+					write(io, LasIO.magic(LasIO.format"LAS"))
 					write(io,mainHeader)
-					FileManager.LasIO.skiplasf(s)
-					header = FileManager.LasIO.read(s, FileManager.LasIO.LasHeader)
+					LasIO.skiplasf(s)
+					header = LasIO.read(s, LasIO.LasHeader)
 					n = header.records_count
-					pointtype = FileManager.LasIO.pointformat(header)
+					pointtype = LasIO.pointformat(header)
 					pointdata = Vector{pointtype}(undef, n)
 
 					for i in 1:n
-						pointdata[i] = FileManager.LasIO.read(s, pointtype)
+						pointdata[i] = LasIO.read(s, pointtype)
 						write(io,pointdata[i])
 					end
 
@@ -296,15 +296,15 @@ function flush(node::PWNode, potreeWriter::PotreeWriter)
 			end
 			io = open(filepath,"w")
 			mainHeader = newHeader(node.aabb; npoints = length(points), scale=potreeWriter.scale)
-			write(io, FileManager.LasIO.magic(FileManager.LasIO.format"LAS"))
+			write(io, LasIO.magic(LasIO.format"LAS"))
 			write(io,mainHeader)
 		end
 
 		# punti da appendere o da salvare
 		for e_c in points
 			p = newPointRecord(e_c.position,
-								reinterpret.(FileManager.LasIO.N0f16,e_c.color),
-								FileManager.LasIO.LasPoint2,
+								reinterpret.(LasIO.N0f16,e_c.color),
+								LasIO.LasPoint2,
 								mainHeader;
 								raw_classification = e_c.classification,
 								intensity = e_c.intensity,

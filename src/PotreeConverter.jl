@@ -1,17 +1,10 @@
 module PotreeConverter
 
-    using AlphaStructures
     using Common
-    using FileManager
     using Printf
-    using Detection
-    using Detection.Search.NearestNeighbors
+    using FileManager
     using FileManager.LasIO
     using FileManager.LasIO.FileIO
-    using SparseArrays
-    using Triangulate
-    using OrderedCollections
-    using IntervalTrees
 
     macro format(ex)
        quote
@@ -58,20 +51,20 @@ module PotreeConverter
     include("Potree/convert.jl")
     include("Potree/main.jl")
 
-    # COMAPTREE
-    include("Comaptree/struct.jl")
-    include("Comaptree/expand.jl")
-    include("Comaptree/CWNode.jl")
-    include("Comaptree/potree2bim.jl")
-    include("Comaptree/densification.jl")
-    include("Comaptree/util.jl")
-
-    # COMAPTREE
-    include("LAR/arrangement.jl")
-    include("LAR/util.jl")
-    include("LAR/boundary.jl")
-    include("LAR/planar_arrangement.jl")
-    include("LAR/refactoring.jl")
-    include("LAR/minimal_cycles.jl")
-    include("LAR/tgw3d.jl")
+    # # COMAPTREE
+    # include("Comaptree/struct.jl")
+    # include("Comaptree/expand.jl")
+    # include("Comaptree/CWNode.jl")
+    # include("Comaptree/potree2bim.jl")
+    # include("Comaptree/densification.jl")
+    # include("Comaptree/util.jl")
+    #
+    # # COMAPTREE
+    # include("LAR/arrangement.jl")
+    # include("LAR/util.jl")
+    # include("LAR/boundary.jl")
+    # include("LAR/planar_arrangement.jl")
+    # include("LAR/refactoring.jl")
+    # include("LAR/minimal_cycles.jl")
+    # include("LAR/tgw3d.jl")
 end # module

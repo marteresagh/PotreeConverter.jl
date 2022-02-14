@@ -1,4 +1,4 @@
-function Point(lasPoint::FileManager.LasPoint, header::FileManager.LasHeader)::Point
+function Point(lasPoint::LasIO.LasPoint, header::LasIO.LasHeader)::Point
     position = FileManager.xyz(lasPoint,header)
 	color = [reinterpret(UInt16,lasPoint.red),reinterpret(UInt16,lasPoint.green),reinterpret(UInt16,lasPoint.blue)]
 	normal = Float64[]

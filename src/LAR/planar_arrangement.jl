@@ -323,6 +323,7 @@ function prune_containment_graph(n, V, EVs, shells, graph)
      end
      return graph
 end
+
 function transitive_reduction!(graph)
     n = size(graph, 1)
     for j in 1:n
@@ -337,6 +338,7 @@ function transitive_reduction!(graph)
         end
     end
 end
+
 function cell_merging(n, containment_graph, V, EVs, boundaries, shells, shell_bboxes)
     function bboxes(V::Common.Points, indexes::Common.ChainOp)
         boxes = Array{Tuple{Any, Any}}(undef, indexes.n)
