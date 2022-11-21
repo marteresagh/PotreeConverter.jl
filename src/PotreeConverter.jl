@@ -6,7 +6,7 @@ module PotreeConverter
     using FileManager.LasIO
     using FileManager.LasIO.FileIO
     using Detection
-    
+
 
     macro format(ex)
        quote
@@ -38,7 +38,7 @@ module PotreeConverter
 
     const cellSizeFactor = 5.0
 
-    # POTREE CONVERTER
+    # POTREE CONVERTER : generazione del Potree
     include("Potree/struct.jl")
     include("Potree/stuff.jl")
     include("Potree/PotreeWriter.jl")
@@ -53,7 +53,7 @@ module PotreeConverter
     include("Potree/convert.jl")
     include("Potree/main.jl")
 
-    # # COMAPTREE
+    # COMAPTREE : generazione del Comaptree
     include("Comaptree/struct.jl")
     include("Comaptree/expand.jl")
     include("Comaptree/CWNode.jl")
