@@ -56,7 +56,7 @@ function potreeconvert(args::PotreeArguments)
 	if isempty(args.aabbValues)
 		args.aabb = calculateAABB(args.sources)
 	else
-		args.aabb = calculateAABB(aabb)
+		args.aabb = calculateAABB(args.aabbValues)
 	end
 
     println("AABB: ")

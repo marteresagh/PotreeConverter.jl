@@ -8,7 +8,7 @@ function PotreeArguments(workDir::String, sources::Vector{String})
     colorRange = Float64[]
     intensityRange = Float64[]
     scale = 0.01
-    diagonalFraction = 250
+    diagonalFraction = 200
     aabbValues = Float64[]
     pageName = ""
     storeOption = ABORT_IF_EXISTS
