@@ -5,6 +5,8 @@ module PotreeConverter
     using FileManager
     using FileManager.LasIO
     using FileManager.LasIO.FileIO
+    using Detection
+    
 
     macro format(ex)
        quote
@@ -52,12 +54,12 @@ module PotreeConverter
     include("Potree/main.jl")
 
     # # COMAPTREE
-    # include("Comaptree/struct.jl")
-    # include("Comaptree/expand.jl")
-    # include("Comaptree/CWNode.jl")
-    # include("Comaptree/potree2bim.jl")
-    # include("Comaptree/densification.jl")
-    # include("Comaptree/util.jl")
+    include("Comaptree/struct.jl")
+    include("Comaptree/expand.jl")
+    include("Comaptree/CWNode.jl")
+    include("Comaptree/potree2bim.jl")
+    include("Comaptree/densification.jl")
+    include("Comaptree/util.jl")
     #
     # # COMAPTREE
     # include("LAR/arrangement.jl")

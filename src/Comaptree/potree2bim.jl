@@ -74,7 +74,7 @@ end
 
 Elaborate each comaptree node in postorder.
 """
-function processTree(writer::PotreeWriter, comaptree::ComaptreeWriter, par_angle, par_dist)
+function processTree(writer::PotreeWriter, comaptree::ComaptreeWriter; par_angle=pi/8, par_dist=0.02)
 
 	function elaborateNode(writer::PotreeWriter)
 		function elaborateNode0(node::CWNode)
@@ -85,7 +85,7 @@ function processTree(writer::PotreeWriter, comaptree::ComaptreeWriter, par_angle
 			if isLeafNode(node)
 				println("leaf node: $ref_name")
 
-				identification(node,file_node)
+				identification(node,file_node, 30, par_dist)
 			else
 				println("internal node: $ref_name")
 				identification(node,file_node)
@@ -106,11 +106,11 @@ end
 
 Get cluster of coplanar planes.
 """
-function identification(node::CWNode,file_node::String)
+function identification(node::CWNode,file_node::String,par_dist)
 	println("== identification ==")
 	PC = FileManager.source2pc(file_node)
 	if PC.n_points>10
-		node.hyperplanes = get_planes(PC)
+		node.hyperplanes = get_planes(PC, 30, par_dist)
 		println("$(length(node.hyperplanes)) planes found")
 	end
 end
